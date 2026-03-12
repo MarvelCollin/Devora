@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { HiOutlineKey, HiOutlineCodeBracket } from "react-icons/hi2";
+import {
+  HiOutlineKey,
+  HiOutlineCodeBracket,
+  HiOutlineComputerDesktop,
+} from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
 import { HomePage } from "./pages/home-page/home-page";
 import { VaultEnvConverterPage } from "./pages/vault-env-converter-page/vault-env-converter-page";
 import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-page";
+import { KeyboardTestPage } from "./pages/keyboard-test-page/keyboard-test-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -21,6 +26,13 @@ const tools: ITool[] = [
     description: "Format, validate, and beautify JSON data with syntax highlighting",
     icon: HiOutlineCodeBracket,
     path: "/json-formatter",
+  },
+  {
+    id: "keyboard-test",
+    name: "Keyboard Test",
+    description: "Test your keyboard keys and see real-time key press information",
+    icon: HiOutlineComputerDesktop,
+    path: "/keyboard-test",
   },
 ];
 
@@ -47,6 +59,8 @@ export const App = () => {
         return <VaultEnvConverterPage />;
       case "json-formatter":
         return <JsonFormatterPage />;
+      case "keyboard-test":
+        return <KeyboardTestPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
