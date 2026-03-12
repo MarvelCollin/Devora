@@ -4,6 +4,7 @@ import {
   HiOutlineCodeBracket,
   HiOutlineComputerDesktop,
   HiOutlineCursorArrowRays,
+  HiOutlineClock,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -12,6 +13,7 @@ import { VaultEnvConverterPage } from "./pages/vault-env-converter-page/vault-en
 import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-page";
 import { KeyboardTestPage } from "./pages/keyboard-test-page/keyboard-test-page";
 import { MouseTestPage } from "./pages/mouse-test-page/mouse-test-page";
+import { TimestampConverterPage } from "./pages/timestamp-converter-page/timestamp-converter-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -43,6 +45,13 @@ const tools: ITool[] = [
     icon: HiOutlineCursorArrowRays,
     path: "/mouse-test",
   },
+  {
+    id: "timestamp-converter",
+    name: "Timestamp Converter",
+    description: "Convert between Unix timestamps and human-readable dates instantly",
+    icon: HiOutlineClock,
+    path: "/timestamp-converter",
+  },
 ];
 
 export const App = () => {
@@ -72,6 +81,8 @@ export const App = () => {
         return <KeyboardTestPage />;
       case "mouse-test":
         return <MouseTestPage />;
+      case "timestamp-converter":
+        return <TimestampConverterPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
