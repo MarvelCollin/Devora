@@ -5,6 +5,10 @@ import {
   HiOutlineComputerDesktop,
   HiOutlineCursorArrowRays,
   HiOutlineClock,
+  HiOutlineFingerPrint,
+  HiOutlineDocumentDuplicate,
+  HiOutlineLink,
+  HiOutlineSwatch,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -14,6 +18,10 @@ import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-pa
 import { KeyboardTestPage } from "./pages/keyboard-test-page/keyboard-test-page";
 import { MouseTestPage } from "./pages/mouse-test-page/mouse-test-page";
 import { TimestampConverterPage } from "./pages/timestamp-converter-page/timestamp-converter-page";
+import { HashGeneratorPage } from "./pages/hash-generator-page/hash-generator-page";
+import { Base64EncoderPage } from "./pages/base64-encoder-page/base64-encoder-page";
+import { UrlEncoderPage } from "./pages/url-encoder-page/url-encoder-page";
+import { ColorConverterPage } from "./pages/color-converter-page/color-converter-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -52,6 +60,34 @@ const tools: ITool[] = [
     icon: HiOutlineClock,
     path: "/timestamp-converter",
   },
+  {
+    id: "hash-generator",
+    name: "Hash Generator",
+    description: "Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any text",
+    icon: HiOutlineFingerPrint,
+    path: "/hash-generator",
+  },
+  {
+    id: "base64-encoder",
+    name: "Base64 Encoder / Decoder",
+    description: "Encode text to Base64 or decode Base64 strings back to text",
+    icon: HiOutlineDocumentDuplicate,
+    path: "/base64-encoder",
+  },
+  {
+    id: "url-encoder",
+    name: "URL Encoder / Decoder",
+    description: "Encode and decode URL components and parse query strings",
+    icon: HiOutlineLink,
+    path: "/url-encoder",
+  },
+  {
+    id: "color-converter",
+    name: "Color Converter",
+    description: "Convert colors between HEX, RGB, and HSL formats with live preview",
+    icon: HiOutlineSwatch,
+    path: "/color-converter",
+  },
 ];
 
 export const App = () => {
@@ -83,6 +119,14 @@ export const App = () => {
         return <MouseTestPage />;
       case "timestamp-converter":
         return <TimestampConverterPage />;
+      case "hash-generator":
+        return <HashGeneratorPage />;
+      case "base64-encoder":
+        return <Base64EncoderPage />;
+      case "url-encoder":
+        return <UrlEncoderPage />;
+      case "color-converter":
+        return <ColorConverterPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
