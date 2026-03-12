@@ -3,6 +3,7 @@ import {
   HiOutlineKey,
   HiOutlineCodeBracket,
   HiOutlineComputerDesktop,
+  HiOutlineCursorArrowRays,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -10,6 +11,7 @@ import { HomePage } from "./pages/home-page/home-page";
 import { VaultEnvConverterPage } from "./pages/vault-env-converter-page/vault-env-converter-page";
 import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-page";
 import { KeyboardTestPage } from "./pages/keyboard-test-page/keyboard-test-page";
+import { MouseTestPage } from "./pages/mouse-test-page/mouse-test-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -33,6 +35,13 @@ const tools: ITool[] = [
     description: "Test your keyboard keys and see real-time key press information",
     icon: HiOutlineComputerDesktop,
     path: "/keyboard-test",
+  },
+  {
+    id: "mouse-test",
+    name: "Mouse Test",
+    description: "Test your mouse buttons, scroll wheel, and track cursor movement",
+    icon: HiOutlineCursorArrowRays,
+    path: "/mouse-test",
   },
 ];
 
@@ -61,6 +70,8 @@ export const App = () => {
         return <JsonFormatterPage />;
       case "keyboard-test":
         return <KeyboardTestPage />;
+      case "mouse-test":
+        return <MouseTestPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
