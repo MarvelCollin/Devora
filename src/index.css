@@ -27,6 +27,24 @@
   --color-warning-400: #fbbf24;
 }
 
+.light {
+  --color-dark-950: #ffffff;
+  --color-dark-900: #f8fafc;
+  --color-dark-850: #f1f5f9;
+  --color-dark-800: #e2e8f0;
+  --color-dark-700: #cbd5e1;
+  --color-dark-600: #94a3b8;
+  --color-dark-500: #64748b;
+  --color-dark-400: #475569;
+  --color-dark-300: #334155;
+  --color-dark-200: #1e293b;
+  --color-dark-100: #0f172a;
+
+  --color-accent-600: #4338ca;
+  --color-accent-500: #4f46e5;
+  --color-accent-400: #6366f1;
+}
+
 * {
   box-sizing: border-box;
 }
