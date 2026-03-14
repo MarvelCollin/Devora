@@ -84,12 +84,9 @@ const measureUpload = async (): Promise<number> => {
     method: "POST",
     body: payload,
     cache: "no-store",
-    mode: "cors",
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
+    mode: "no-cors",
   });
-  if (!response.ok) {
+  if (!response) {
     throw new Error("Upload test failed");
   }
   const end = performance.now();
