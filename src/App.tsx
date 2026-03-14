@@ -4,6 +4,7 @@ import {
   HiOutlineCodeBracket,
   HiOutlineComputerDesktop,
   HiOutlineCursorArrowRays,
+  HiOutlineSignal,
   HiOutlineClock,
   HiOutlineFingerPrint,
   HiOutlineDocumentDuplicate,
@@ -22,6 +23,7 @@ import { HashGeneratorPage } from "./pages/hash-generator-page/hash-generator-pa
 import { Base64EncoderPage } from "./pages/base64-encoder-page/base64-encoder-page";
 import { UrlEncoderPage } from "./pages/url-encoder-page/url-encoder-page";
 import { ColorConverterPage } from "./pages/color-converter-page/color-converter-page";
+import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -88,6 +90,13 @@ const tools: ITool[] = [
     icon: HiOutlineSwatch,
     path: "/color-converter",
   },
+  {
+    id: "wifi-speed-test",
+    name: "WiFi Speed Test",
+    description: "Measure your connection latency, download speed, and upload speed",
+    icon: HiOutlineSignal,
+    path: "/wifi-speed-test",
+  },
 ];
 
 export const App = () => {
@@ -127,6 +136,8 @@ export const App = () => {
         return <UrlEncoderPage />;
       case "color-converter":
         return <ColorConverterPage />;
+      case "wifi-speed-test":
+        return <WifiSpeedTestPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
