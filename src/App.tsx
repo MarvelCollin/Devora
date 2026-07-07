@@ -10,6 +10,7 @@ import {
   HiOutlineDocumentDuplicate,
   HiOutlineLink,
   HiOutlineSwatch,
+  HiOutlineQrCode,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -24,6 +25,7 @@ import { Base64EncoderPage } from "./pages/base64-encoder-page/base64-encoder-pa
 import { UrlEncoderPage } from "./pages/url-encoder-page/url-encoder-page";
 import { ColorConverterPage } from "./pages/color-converter-page/color-converter-page";
 import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-page";
+import { QrGeneratorPage } from "./pages/qr-generator-page/qr-generator-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -97,6 +99,13 @@ const tools: ITool[] = [
     icon: HiOutlineSignal,
     path: "/wifi-speed-test",
   },
+  {
+    id: "qr-generator",
+    name: "QR Code Generator",
+    description: "Generate single or bulk QR codes with PDF export",
+    icon: HiOutlineQrCode,
+    path: "/qr-generator",
+  },
 ];
 
 export const App = () => {
@@ -138,6 +147,8 @@ export const App = () => {
         return <ColorConverterPage />;
       case "wifi-speed-test":
         return <WifiSpeedTestPage />;
+      case "qr-generator":
+        return <QrGeneratorPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
