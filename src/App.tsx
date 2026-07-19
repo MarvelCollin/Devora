@@ -11,6 +11,7 @@ import {
   HiOutlineLink,
   HiOutlineSwatch,
   HiOutlineQrCode,
+  HiOutlinePhoto,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -26,6 +27,7 @@ import { UrlEncoderPage } from "./pages/url-encoder-page/url-encoder-page";
 import { ColorConverterPage } from "./pages/color-converter-page/color-converter-page";
 import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-page";
 import { QrGeneratorPage } from "./pages/qr-generator-page/qr-generator-page";
+import { ImageCompressorPage } from "./pages/image-compressor-page/image-compressor-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -106,6 +108,13 @@ const tools: ITool[] = [
     icon: HiOutlineQrCode,
     path: "/qr-generator",
   },
+  {
+    id: "image-compressor",
+    name: "Image Compressor",
+    description: "Compress and resize images with adjustable quality and format",
+    icon: HiOutlinePhoto,
+    path: "/image-compressor",
+  },
 ];
 
 export const App = () => {
@@ -149,6 +158,8 @@ export const App = () => {
         return <WifiSpeedTestPage />;
       case "qr-generator":
         return <QrGeneratorPage />;
+      case "image-compressor":
+        return <ImageCompressorPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
