@@ -82,7 +82,7 @@ const buildRoomPdf = async (
   title: string,
   count: number,
   layout: GridLayout
-): Promise<Uint8Array> => {
+): Promise<ArrayBuffer> => {
   const { cols, qrSize, cellH, fontSize } = layout;
 
   const dataUrl = await QRCode.toDataURL(value, {
@@ -119,7 +119,7 @@ const buildRoomPdf = async (
     });
   }
 
-  return pdf.output("arraybuffer") as unknown as Uint8Array;
+  return pdf.output("arraybuffer");
 };
 
 const sanitizeFilename = (name: string): string => {
