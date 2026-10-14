@@ -83,6 +83,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.JwtDecoderPage,
     }))
   ),
+  "regex-tester": lazy(() =>
+    import("./pages/regex-tester-page/regex-tester-page").then((m) => ({
+      default: m.RegexTesterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

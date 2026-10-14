@@ -13,6 +13,7 @@ import {
   HiOutlinePhoto,
   HiOutlineDocumentText,
   HiOutlineShieldCheck,
+  HiOutlineVariable,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -137,5 +138,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineShieldCheck,
     group: "Encode and decode",
     keywords: ["jwt", "token", "bearer", "auth", "claims", "decode"],
+  },
+  {
+    id: "regex-tester",
+    name: "Regex Tester",
+    description: "Test regular expressions with live matches, groups and replace",
+    icon: HiOutlineVariable,
+    group: "Text and generators",
+    keywords: ["regex", "regexp", "regular expression", "match", "replace", "pattern"],
   },
 ];
