@@ -26,7 +26,7 @@ export const ValueList = ({ rows, className = "" }: IValueListProps) => (
         <dd className="min-w-0 flex-1">
           <span
             className={clsx(
-              "block text-ink [overflow-wrap:anywhere]",
+              "block whitespace-pre-wrap text-ink [overflow-wrap:anywhere]",
               row.mono === false ? "text-sm" : "font-mono text-sm"
             )}
           >

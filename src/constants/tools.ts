@@ -17,6 +17,7 @@ import {
   HiOutlineDocumentMagnifyingGlass,
   HiOutlineIdentification,
   HiOutlineLockClosed,
+  HiOutlineLanguage,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -173,5 +174,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineLockClosed,
     group: "Text and generators",
     keywords: ["password", "passphrase", "secure", "random", "strength", "generator"],
+  },
+  {
+    id: "case-converter",
+    name: "Case Converter",
+    description: "Convert text to camelCase, snake_case, kebab-case, Title Case and more",
+    icon: HiOutlineLanguage,
+    group: "Format and convert",
+    keywords: ["case", "camel", "snake", "kebab", "pascal", "title", "uppercase", "lowercase"],
   },
 ];

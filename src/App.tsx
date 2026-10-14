@@ -103,6 +103,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.PasswordGeneratorPage,
     }))
   ),
+  "case-converter": lazy(() =>
+    import("./pages/case-converter-page/case-converter-page").then((m) => ({
+      default: m.CaseConverterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (
