@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { clsx } from "clsx";
+import { useRouteFocus } from "../../../hooks/use-route-focus";
 
 interface IToolPageProps {
   title: string;
@@ -16,6 +17,8 @@ export const ToolPage = ({
   children,
   fill = false,
 }: IToolPageProps) => {
+  const titleRef = useRouteFocus<HTMLHeadingElement>();
+
   return (
     <div
       className={clsx(
@@ -26,6 +29,7 @@ export const ToolPage = ({
       <header className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
           <h1
+            ref={titleRef}
             id="page-title"
             tabIndex={-1}
             className="font-mono text-2xl font-semibold tracking-tight text-ink"

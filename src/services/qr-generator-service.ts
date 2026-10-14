@@ -1,6 +1,5 @@
 import QRCode from "qrcode";
-import { jsPDF } from "jspdf";
-import JSZip from "jszip";
+import type { jsPDF } from "jspdf";
 
 export const generateQrDataUrl = async (
   text: string,
@@ -79,6 +78,7 @@ const calcLayout = (maxCount: number): GridLayout => {
 };
 
 const buildRoomPdf = async (
+  PdfDocument: typeof jsPDF,
   value: string,
   title: string,
   count: number,
@@ -91,7 +91,7 @@ const buildRoomPdf = async (
     margin: 1,
   });
 
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pdf = new PdfDocument({ orientation: "portrait", unit: "mm", format: "a4" });
 
   pdf.setFontSize(12);
   pdf.setFont("helvetica", "bold");
@@ -132,10 +132,11 @@ export const generateBulkZip = async (
 ): Promise<void> => {
   const maxCount = Math.max(...entries.map((e) => e.count));
   const layout = calcLayout(maxCount);
+  const { jsPDF: PdfDocument } = await import("jspdf");
 
   if (entries.length === 1) {
     const e = entries[0];
-    const pdfBytes = await buildRoomPdf(e.value, e.title, e.count, layout);
+    const pdfBytes = await buildRoomPdf(PdfDocument, e.value, e.title, e.count, layout);
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -146,9 +147,10 @@ export const generateBulkZip = async (
     return;
   }
 
+  const { default: JSZip } = await import("jszip");
   const zip = new JSZip();
   for (const entry of entries) {
-    const pdfBytes = await buildRoomPdf(entry.value, entry.title, entry.count, layout);
+    const pdfBytes = await buildRoomPdf(PdfDocument, entry.value, entry.title, entry.count, layout);
     zip.file(`${sanitizeFilename(entry.title)}.pdf`, pdfBytes);
   }
 

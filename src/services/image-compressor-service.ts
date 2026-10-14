@@ -1,5 +1,3 @@
-import JSZip from "jszip";
-
 export type OutputFormat = "image/jpeg" | "image/webp" | "image/png";
 
 export interface CompressionOptions {
@@ -112,6 +110,7 @@ export const downloadBlob = (blob: Blob, filename: string): void => {
 export const downloadAllZip = async (
   results: CompressedResult[]
 ): Promise<void> => {
+  const { default: JSZip } = await import("jszip");
   const zip = new JSZip();
   results.forEach((result) => zip.file(result.name, result.blob));
   const blob = await zip.generateAsync({ type: "blob" });

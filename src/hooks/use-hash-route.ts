@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { requestRouteFocus } from "./use-route-focus";
 
 const readRoute = (): string | null => {
   const id = window.location.hash.replace(/^#\/?/, "").trim();
@@ -12,7 +13,10 @@ export const useHashRoute = (): string | null => {
   const [route, setRoute] = useState<string | null>(readRoute);
 
   useEffect(() => {
-    const handleChange = () => setRoute(readRoute());
+    const handleChange = () => {
+      requestRouteFocus();
+      setRoute(readRoute());
+    };
     window.addEventListener("hashchange", handleChange);
     return () => window.removeEventListener("hashchange", handleChange);
   }, []);

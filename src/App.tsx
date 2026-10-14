@@ -1,40 +1,80 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { JSX, MouseEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import type { ComponentType, MouseEvent } from "react";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
 import { NavDrawer } from "./components/layout/nav-drawer/nav-drawer";
 import { ToolPage } from "./components/layout/tool-page/tool-page";
+import { PageSkeleton } from "./components/layout/page-skeleton/page-skeleton";
 import { HomePage } from "./pages/home-page/home-page";
-import { VaultEnvConverterPage } from "./pages/vault-env-converter-page/vault-env-converter-page";
-import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-page";
-import { KeyboardTestPage } from "./pages/keyboard-test-page/keyboard-test-page";
-import { MouseTestPage } from "./pages/mouse-test-page/mouse-test-page";
-import { TimestampConverterPage } from "./pages/timestamp-converter-page/timestamp-converter-page";
-import { HashGeneratorPage } from "./pages/hash-generator-page/hash-generator-page";
-import { Base64EncoderPage } from "./pages/base64-encoder-page/base64-encoder-page";
-import { UrlEncoderPage } from "./pages/url-encoder-page/url-encoder-page";
-import { ColorConverterPage } from "./pages/color-converter-page/color-converter-page";
-import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-page";
-import { QrGeneratorPage } from "./pages/qr-generator-page/qr-generator-page";
-import { ImageCompressorPage } from "./pages/image-compressor-page/image-compressor-page";
-import { WordCounterPage } from "./pages/word-counter-page/word-counter-page";
 import { TOOLS } from "./constants/tools";
 import { routeHref, useHashRoute } from "./hooks/use-hash-route";
 
-const PAGES: Record<string, () => JSX.Element> = {
-  "vault-env-converter": VaultEnvConverterPage,
-  "json-formatter": JsonFormatterPage,
-  "keyboard-test": KeyboardTestPage,
-  "mouse-test": MouseTestPage,
-  "timestamp-converter": TimestampConverterPage,
-  "hash-generator": HashGeneratorPage,
-  "base64-encoder": Base64EncoderPage,
-  "url-encoder": UrlEncoderPage,
-  "color-converter": ColorConverterPage,
-  "wifi-speed-test": WifiSpeedTestPage,
-  "qr-generator": QrGeneratorPage,
-  "image-compressor": ImageCompressorPage,
-  "word-counter": WordCounterPage,
+const PAGES: Record<string, ComponentType> = {
+  "vault-env-converter": lazy(() =>
+    import("./pages/vault-env-converter-page/vault-env-converter-page").then((m) => ({
+      default: m.VaultEnvConverterPage,
+    }))
+  ),
+  "json-formatter": lazy(() =>
+    import("./pages/json-formatter-page/json-formatter-page").then((m) => ({
+      default: m.JsonFormatterPage,
+    }))
+  ),
+  "keyboard-test": lazy(() =>
+    import("./pages/keyboard-test-page/keyboard-test-page").then((m) => ({
+      default: m.KeyboardTestPage,
+    }))
+  ),
+  "mouse-test": lazy(() =>
+    import("./pages/mouse-test-page/mouse-test-page").then((m) => ({
+      default: m.MouseTestPage,
+    }))
+  ),
+  "timestamp-converter": lazy(() =>
+    import("./pages/timestamp-converter-page/timestamp-converter-page").then((m) => ({
+      default: m.TimestampConverterPage,
+    }))
+  ),
+  "hash-generator": lazy(() =>
+    import("./pages/hash-generator-page/hash-generator-page").then((m) => ({
+      default: m.HashGeneratorPage,
+    }))
+  ),
+  "base64-encoder": lazy(() =>
+    import("./pages/base64-encoder-page/base64-encoder-page").then((m) => ({
+      default: m.Base64EncoderPage,
+    }))
+  ),
+  "url-encoder": lazy(() =>
+    import("./pages/url-encoder-page/url-encoder-page").then((m) => ({
+      default: m.UrlEncoderPage,
+    }))
+  ),
+  "color-converter": lazy(() =>
+    import("./pages/color-converter-page/color-converter-page").then((m) => ({
+      default: m.ColorConverterPage,
+    }))
+  ),
+  "wifi-speed-test": lazy(() =>
+    import("./pages/wifi-speed-test-page/wifi-speed-test-page").then((m) => ({
+      default: m.WifiSpeedTestPage,
+    }))
+  ),
+  "qr-generator": lazy(() =>
+    import("./pages/qr-generator-page/qr-generator-page").then((m) => ({
+      default: m.QrGeneratorPage,
+    }))
+  ),
+  "image-compressor": lazy(() =>
+    import("./pages/image-compressor-page/image-compressor-page").then((m) => ({
+      default: m.ImageCompressorPage,
+    }))
+  ),
+  "word-counter": lazy(() =>
+    import("./pages/word-counter-page/word-counter-page").then((m) => ({
+      default: m.WordCounterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (
@@ -56,7 +96,6 @@ export const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
-  const firstRender = useRef(true);
 
   const activeTool = TOOLS.find((tool) => tool.id === route) ?? null;
   const Page = route ? PAGES[route] : null;
@@ -66,11 +105,6 @@ export const App = () => {
   useEffect(() => {
     document.title = activeTool ? `${activeTool.name} | Devora` : "Devora | Developer tools";
     mainRef.current?.scrollTo({ top: 0 });
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    document.getElementById("page-title")?.focus();
   }, [route, activeTool]);
 
   const skipToContent = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -114,7 +148,9 @@ export const App = () => {
         {route === null ? (
           <HomePage tools={TOOLS} />
         ) : Page ? (
-          <Page key={route} />
+          <Suspense fallback={<PageSkeleton />}>
+            <Page key={route} />
+          </Suspense>
         ) : (
           <NotFoundPage />
         )}
