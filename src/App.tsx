@@ -98,6 +98,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.UuidGeneratorPage,
     }))
   ),
+  "password-generator": lazy(() =>
+    import("./pages/password-generator-page/password-generator-page").then((m) => ({
+      default: m.PasswordGeneratorPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

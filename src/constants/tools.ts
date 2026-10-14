@@ -16,6 +16,7 @@ import {
   HiOutlineVariable,
   HiOutlineDocumentMagnifyingGlass,
   HiOutlineIdentification,
+  HiOutlineLockClosed,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -164,5 +165,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineIdentification,
     group: "Text and generators",
     keywords: ["uuid", "guid", "id", "v4", "v7", "random", "unique"],
+  },
+  {
+    id: "password-generator",
+    name: "Password Generator",
+    description: "Generate strong passwords or passphrases with a strength meter",
+    icon: HiOutlineLockClosed,
+    group: "Text and generators",
+    keywords: ["password", "passphrase", "secure", "random", "strength", "generator"],
   },
 ];
