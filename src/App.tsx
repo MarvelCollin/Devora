@@ -93,6 +93,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.TextDiffPage,
     }))
   ),
+  "uuid-generator": lazy(() =>
+    import("./pages/uuid-generator-page/uuid-generator-page").then((m) => ({
+      default: m.UuidGeneratorPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

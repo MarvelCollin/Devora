@@ -15,6 +15,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineVariable,
   HiOutlineDocumentMagnifyingGlass,
+  HiOutlineIdentification,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -155,5 +156,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineDocumentMagnifyingGlass,
     group: "Text and generators",
     keywords: ["diff", "compare", "difference", "changes", "patch"],
+  },
+  {
+    id: "uuid-generator",
+    name: "UUID Generator",
+    description: "Generate v4 or time ordered v7 UUIDs and inspect any UUID",
+    icon: HiOutlineIdentification,
+    group: "Text and generators",
+    keywords: ["uuid", "guid", "id", "v4", "v7", "random", "unique"],
   },
 ];
