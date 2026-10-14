@@ -129,7 +129,7 @@ export const TimezoneConverterPage = () => {
                 <li
                   key={zone}
                   className={clsx(
-                    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-rule px-4 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1.3fr)_auto_minmax(0,1fr)_auto]",
+                    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-rule px-4 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1.3fr)_9rem_minmax(0,1fr)_auto]",
                     isSource && "bg-tint"
                   )}
                 >
