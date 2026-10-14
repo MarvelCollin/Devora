@@ -12,7 +12,7 @@ A collection of fast, free, in-browser developer tools. No sign-up, no uploads t
 
 ## Tools
 
-33 tools in 6 groups. Press `Ctrl K` (or `⌘ K`) on any page to jump to a tool.
+38 tools in 8 groups. Press `Ctrl K` (or `⌘ K`) on any page to jump to a tool.
 
 **Format and convert**
 
@@ -65,17 +65,32 @@ A collection of fast, free, in-browser developer tools. No sign-up, no uploads t
 | Favicon Generator | favicon.ico and app icons from an image or letters |
 | QR Code Generator | Single QR codes or printable batches as PDF |
 
-**Devices and network**
+**Input devices**
 
 | Tool | What it does |
 | --- | --- |
 | Keyboard Test | Check that every key registers |
 | Mouse Test | Test buttons, clicks, scrolling and movement |
 | Gamepad Tester | Buttons, sticks, triggers and vibration |
+| Touchscreen Test | Find dead zones and check multi-touch |
+
+**Screen and sound**
+
+| Tool | What it does |
+| --- | --- |
 | Screen Test | Refresh rate, resolution and a dead pixel test |
-| Webcam and Mic Test | Camera preview, mic level meter and a test recording |
+| Camera Test | Live preview, real frame rate, lighting check and supported resolutions |
+| Mic Test | Input level, background noise, live spectrum and a test recording |
+| Speaker Test | Left and right channels, tone generator and a frequency sweep |
+
+**Network and system**
+
+| Tool | What it does |
+| --- | --- |
 | WiFi Speed Test | Ping, jitter, download and upload speed |
 | My IP and Connection | Public IP, location and connection details |
+| Location Check | GPS and location permission, coordinates and accuracy |
+| Battery Status | Charge level, charging state and time left (Chrome and Edge) |
 
 ## Tech Stack
 
