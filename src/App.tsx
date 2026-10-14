@@ -133,6 +133,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.TimezoneConverterPage,
     }))
   ),
+  "cron-explainer": lazy(() =>
+    import("./pages/cron-explainer-page/cron-explainer-page").then((m) => ({
+      default: m.CronExplainerPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

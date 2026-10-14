@@ -23,6 +23,7 @@ import {
   HiOutlineCircleStack,
   HiOutlinePencilSquare,
   HiOutlineGlobeAsiaAustralia,
+  HiOutlineCalendarDays,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -227,5 +228,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineGlobeAsiaAustralia,
     group: "Time and color",
     keywords: ["timezone", "time zone", "utc", "gmt", "meeting", "world clock", "dst"],
+  },
+  {
+    id: "cron-explainer",
+    name: "Cron Explainer",
+    description: "Explain cron expressions in plain words and list the next run times",
+    icon: HiOutlineCalendarDays,
+    group: "Time and color",
+    keywords: ["cron", "crontab", "schedule", "job", "next run", "quartz"],
   },
 ];
