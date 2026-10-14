@@ -113,6 +113,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.NumberBaseConverterPage,
     }))
   ),
+  "csv-json-converter": lazy(() =>
+    import("./pages/csv-json-converter-page/csv-json-converter-page").then((m) => ({
+      default: m.CsvJsonConverterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

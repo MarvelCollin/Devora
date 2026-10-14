@@ -19,6 +19,7 @@ import {
   HiOutlineLockClosed,
   HiOutlineLanguage,
   HiOutlineCalculator,
+  HiOutlineTableCells,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -191,5 +192,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineCalculator,
     group: "Encode and decode",
     keywords: ["base", "binary", "hex", "hexadecimal", "octal", "decimal", "radix", "bigint"],
+  },
+  {
+    id: "csv-json-converter",
+    name: "CSV / JSON Converter",
+    description: "Convert CSV rows to JSON and JSON arrays back to CSV",
+    icon: HiOutlineTableCells,
+    group: "Format and convert",
+    keywords: ["csv", "json", "spreadsheet", "excel", "tsv", "convert", "table"],
   },
 ];
