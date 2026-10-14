@@ -27,6 +27,7 @@ import {
   HiOutlineSparkles,
   HiOutlineCodeBracketSquare,
   HiOutlineSquare2Stack,
+  HiOutlineEyeDropper,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -263,5 +264,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineSquare2Stack,
     group: "Images",
     keywords: ["favicon", "ico", "icon", "apple touch", "manifest", "pwa", "logo"],
+  },
+  {
+    id: "image-color-picker",
+    name: "Image Color Picker",
+    description: "Pick exact colors from an image and extract its main palette",
+    icon: HiOutlineEyeDropper,
+    group: "Images",
+    keywords: ["color picker", "eyedropper", "palette", "dominant", "image", "hex"],
   },
 ];

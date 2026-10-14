@@ -153,6 +153,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.FaviconGeneratorPage,
     }))
   ),
+  "image-color-picker": lazy(() =>
+    import("./pages/image-color-picker-page/image-color-picker-page").then((m) => ({
+      default: m.ImageColorPickerPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

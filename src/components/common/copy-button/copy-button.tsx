@@ -7,6 +7,7 @@ interface ICopyButtonProps {
   label?: string;
   variant?: "primary" | "secondary" | "ghost";
   className?: string;
+  ariaLabel?: string;
 }
 
 export const CopyButton = ({
@@ -14,6 +15,7 @@ export const CopyButton = ({
   label = "Copy",
   variant = "ghost",
   className,
+  ariaLabel,
 }: ICopyButtonProps) => {
   const { copied, copy } = useClipboard();
 
@@ -27,6 +29,7 @@ export const CopyButton = ({
         disabled={!value}
         icon={copied ? HiCheck : HiOutlineClipboardDocument}
         className={className}
+        ariaLabel={ariaLabel && !copied ? ariaLabel : undefined}
       />
       <span className="sr-only" aria-live="polite">
         {copied ? "Copied to clipboard" : ""}
