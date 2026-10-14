@@ -25,6 +25,7 @@ import {
   HiOutlineGlobeAsiaAustralia,
   HiOutlineCalendarDays,
   HiOutlineSparkles,
+  HiOutlineCodeBracketSquare,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -245,5 +246,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineSparkles,
     group: "Time and color",
     keywords: ["gradient", "shadow", "box-shadow", "css", "tailwind", "background", "linear"],
+  },
+  {
+    id: "image-base64",
+    name: "Image to Base64",
+    description: "Turn images into data URLs for CSS and HTML, or Base64 back into images",
+    icon: HiOutlineCodeBracketSquare,
+    group: "Images",
+    keywords: ["base64", "data url", "data uri", "image", "inline", "embed"],
   },
 ];

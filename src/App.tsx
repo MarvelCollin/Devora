@@ -143,6 +143,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.CssBuilderPage,
     }))
   ),
+  "image-base64": lazy(() =>
+    import("./pages/image-base64-page/image-base64-page").then((m) => ({
+      default: m.ImageBase64Page,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

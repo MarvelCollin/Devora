@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { DragEvent } from "react";
 import { clsx } from "clsx";
 import {
-  HiOutlineArrowUpTray,
   HiOutlineArrowDownTray,
   HiOutlineArchiveBox,
   HiOutlineTrash,
@@ -13,6 +11,7 @@ import { SegmentedControl } from "../../components/common/segmented-control/segm
 import { Slider } from "../../components/common/slider/slider";
 import { SummaryStrip } from "../../components/common/summary-strip/summary-strip";
 import { Notice } from "../../components/common/notice/notice";
+import { DropZone } from "../../components/common/drop-zone/drop-zone";
 import { useDebouncedValue } from "../../hooks/use-debounced-value";
 import {
   compressImage,
@@ -67,10 +66,8 @@ export const ImageCompressorPage = () => {
   const [format, setFormat] = usePersistentState<OutputFormat>("image-compressor:format", "image/webp");
   const [qualityInput, setQualityInput] = usePersistentState("image-compressor:quality", 75);
   const [maxWidth, setMaxWidth] = usePersistentState("image-compressor:max-width", 0);
-  const [dragging, setDragging] = useState(false);
   const [skipped, setSkipped] = useState<string[]>([]);
   const [zipping, setZipping] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<CompressedResult[]>([]);
   const quality = useDebouncedValue(qualityInput, 250) / 100;
 
@@ -108,19 +105,11 @@ export const ImageCompressorPage = () => {
     };
   }, [files, format, quality, maxWidth]);
 
-  const addFiles = (fileList: FileList | null) => {
-    if (!fileList) return;
-    const all = Array.from(fileList);
+  const addFiles = (all: File[]) => {
     const images = all.filter((file) => file.type.startsWith("image/"));
     const rejected = all.filter((file) => !file.type.startsWith("image/"));
     setSkipped(rejected.map((file) => file.name));
     if (images.length > 0) setFiles((prev) => [...prev, ...images]);
-  };
-
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setDragging(false);
-    addFiles(event.dataTransfer.files);
   };
 
   const clearAll = () => {
@@ -191,44 +180,13 @@ export const ImageCompressorPage = () => {
           <h2 id="settings-heading" className="sr-only">
             Settings
           </h2>
-          <div
-            onDragOver={(event) => {
-              event.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            className={clsx(
-              "flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors duration-150",
-              dragging ? "border-primary bg-tint" : "border-line bg-surface"
-            )}
-          >
-            <HiOutlineArrowUpTray className="h-6 w-6 text-strong" aria-hidden="true" />
-            <p className="font-medium text-ink">
-              {dragging ? "Release to add images" : "Drop images here"}
-            </p>
-            <p className="text-sm text-muted">or pick them from your device</p>
-            <Button
-              label="Choose images"
-              variant="secondary"
-              size="sm"
-              onClick={() => inputRef.current?.click()}
-              className="mt-2"
-            />
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              tabIndex={-1}
-              aria-hidden="true"
-              className="sr-only"
-              onChange={(event) => {
-                addFiles(event.target.files);
-                event.target.value = "";
-              }}
-            />
-          </div>
+          <DropZone
+            onFiles={addFiles}
+            multiple
+            title="Drop images here"
+            activeTitle="Release to add images"
+            buttonLabel="Choose images"
+          />
 
           <SegmentedControl
             label="Output format"
