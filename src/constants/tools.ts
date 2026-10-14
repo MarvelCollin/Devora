@@ -20,6 +20,7 @@ import {
   HiOutlineLanguage,
   HiOutlineCalculator,
   HiOutlineTableCells,
+  HiOutlineCircleStack,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -200,5 +201,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineTableCells,
     group: "Format and convert",
     keywords: ["csv", "json", "spreadsheet", "excel", "tsv", "convert", "table"],
+  },
+  {
+    id: "sql-formatter",
+    name: "SQL Formatter",
+    description: "Format SQL for PostgreSQL, MySQL, SQL Server and 17 more dialects",
+    icon: HiOutlineCircleStack,
+    group: "Format and convert",
+    keywords: ["sql", "query", "format", "postgres", "mysql", "database", "beautify"],
   },
 ];

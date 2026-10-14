@@ -118,6 +118,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.CsvJsonConverterPage,
     }))
   ),
+  "sql-formatter": lazy(() =>
+    import("./pages/sql-formatter-page/sql-formatter-page").then((m) => ({
+      default: m.SqlFormatterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

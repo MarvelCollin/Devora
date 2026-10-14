@@ -33,7 +33,13 @@ export const ConverterPanes = ({
   outputFooter,
 }: IConverterPanesProps) => {
   return (
-    <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-5">
+    <div
+      className={
+        onSwap
+          ? "grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-5"
+          : "grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:gap-6"
+      }
+    >
       <TextArea
         label={inputLabel}
         value={input}
