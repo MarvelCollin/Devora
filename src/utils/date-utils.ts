@@ -50,3 +50,21 @@ export const getTimezoneLabel = (date: Date = new Date()): string => {
   const abs = Math.abs(offset);
   return `UTC${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 };
+
+export const formatRelative = (date: Date, now: number = Date.now()): string => {
+  const diff = now - date.getTime();
+  const absDiff = Math.abs(diff);
+  if (absDiff < 1000) return "just now";
+  const units: [number, string][] = [
+    [365 * 24 * 3600 * 1000, "year"],
+    [30 * 24 * 3600 * 1000, "month"],
+    [24 * 3600 * 1000, "day"],
+    [3600 * 1000, "hour"],
+    [60 * 1000, "minute"],
+    [1000, "second"],
+  ];
+  const [size, unit] = units.find(([ms]) => absDiff >= ms) ?? units[units.length - 1];
+  const count = Math.floor(absDiff / size);
+  const label = `${count} ${unit}${count === 1 ? "" : "s"}`;
+  return diff < 0 ? `in ${label}` : `${label} ago`;
+};

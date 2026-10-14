@@ -78,6 +78,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.WordCounterPage,
     }))
   ),
+  "jwt-decoder": lazy(() =>
+    import("./pages/jwt-decoder-page/jwt-decoder-page").then((m) => ({
+      default: m.JwtDecoderPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

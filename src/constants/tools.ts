@@ -12,6 +12,7 @@ import {
   HiOutlineQrCode,
   HiOutlinePhoto,
   HiOutlineDocumentText,
+  HiOutlineShieldCheck,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -128,5 +129,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineSignal,
     group: "Devices and network",
     keywords: ["wifi", "internet", "speed", "ping", "bandwidth"],
+  },
+  {
+    id: "jwt-decoder",
+    name: "JWT Decoder",
+    description: "Read the header, payload and expiry of a JSON Web Token",
+    icon: HiOutlineShieldCheck,
+    group: "Encode and decode",
+    keywords: ["jwt", "token", "bearer", "auth", "claims", "decode"],
   },
 ];
