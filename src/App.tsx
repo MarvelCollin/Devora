@@ -168,6 +168,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.WebcamMicTestPage,
     }))
   ),
+  "gamepad-tester": lazy(() =>
+    import("./pages/gamepad-tester-page/gamepad-tester-page").then((m) => ({
+      default: m.GamepadTesterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

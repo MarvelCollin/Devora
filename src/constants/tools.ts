@@ -30,6 +30,7 @@ import {
   HiOutlineEyeDropper,
   HiOutlineTv,
   HiOutlineVideoCamera,
+  HiOutlinePuzzlePiece,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -290,5 +291,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineVideoCamera,
     group: "Devices and network",
     keywords: ["webcam", "camera", "microphone", "mic", "audio", "video", "test", "meeting"],
+  },
+  {
+    id: "gamepad-tester",
+    name: "Gamepad Tester",
+    description: "Test controller buttons, sticks, triggers and vibration",
+    icon: HiOutlinePuzzlePiece,
+    group: "Devices and network",
+    keywords: ["gamepad", "controller", "joystick", "xbox", "playstation", "drift", "stick"],
   },
 ];
