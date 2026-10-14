@@ -18,6 +18,7 @@ import {
   HiOutlineIdentification,
   HiOutlineLockClosed,
   HiOutlineLanguage,
+  HiOutlineCalculator,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -182,5 +183,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineLanguage,
     group: "Format and convert",
     keywords: ["case", "camel", "snake", "kebab", "pascal", "title", "uppercase", "lowercase"],
+  },
+  {
+    id: "number-base-converter",
+    name: "Number Base Converter",
+    description: "Convert numbers between decimal, hex, binary, octal and any base",
+    icon: HiOutlineCalculator,
+    group: "Encode and decode",
+    keywords: ["base", "binary", "hex", "hexadecimal", "octal", "decimal", "radix", "bigint"],
   },
 ];

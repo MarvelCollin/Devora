@@ -108,6 +108,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.CaseConverterPage,
     }))
   ),
+  "number-base-converter": lazy(() =>
+    import("./pages/number-base-converter-page/number-base-converter-page").then((m) => ({
+      default: m.NumberBaseConverterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (
