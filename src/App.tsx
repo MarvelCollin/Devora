@@ -193,6 +193,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.TouchscreenTestPage,
     }))
   ),
+  "battery-status": lazy(() =>
+    import("./pages/battery-status-page/battery-status-page").then((m) => ({
+      default: m.BatteryStatusPage,
+    }))
+  ),
 };
 
 const ROUTE_ALIASES: Record<string, string> = {

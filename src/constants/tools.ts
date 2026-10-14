@@ -35,6 +35,7 @@ import {
   HiOutlineMicrophone,
   HiOutlineSpeakerWave,
   HiOutlineHandRaised,
+  HiOutlineBattery50,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -337,5 +338,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineHandRaised,
     group: "Input devices",
     keywords: ["touch", "touchscreen", "multi-touch", "dead zone", "tablet", "phone", "pen"],
+  },
+  {
+    id: "battery-status",
+    name: "Battery Status",
+    description: "See battery charge, charging state and time left",
+    icon: HiOutlineBattery50,
+    group: "Network and system",
+    keywords: ["battery", "charge", "charging", "power", "laptop", "phone"],
   },
 ];
