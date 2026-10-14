@@ -22,6 +22,7 @@ import {
   type OutputFormat,
   type CompressedResult,
 } from "../../services/image-compressor-service";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 interface IComputed {
   files: File[];
@@ -63,9 +64,9 @@ const changeLabel = (original: number, compressed: number) => {
 export const ImageCompressorPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [computed, setComputed] = useState<IComputed | null>(null);
-  const [format, setFormat] = useState<OutputFormat>("image/webp");
-  const [qualityInput, setQualityInput] = useState(75);
-  const [maxWidth, setMaxWidth] = useState(0);
+  const [format, setFormat] = usePersistentState<OutputFormat>("image-compressor:format", "image/webp");
+  const [qualityInput, setQualityInput] = usePersistentState("image-compressor:quality", 75);
+  const [maxWidth, setMaxWidth] = usePersistentState("image-compressor:max-width", 0);
   const [dragging, setDragging] = useState(false);
   const [skipped, setSkipped] = useState<string[]>([]);
   const [zipping, setZipping] = useState(false);

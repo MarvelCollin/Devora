@@ -15,6 +15,7 @@ import {
   generateBulkZip,
   parseBulkCsv,
 } from "../../services/qr-generator-service";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type Mode = "single" | "bulk";
 
@@ -35,7 +36,7 @@ const copyImageToClipboard = async (dataUrl: string) => {
 };
 
 const SingleQr = () => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = usePersistentState("qr:content", "");
   const [qr, setQr] = useState<{ source: string; url: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -147,7 +148,7 @@ const SingleQr = () => {
 };
 
 const BulkQr = () => {
-  const [csv, setCsv] = useState("");
+  const [csv, setCsv] = usePersistentState("qr:csv", "");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(false);
 
@@ -261,7 +262,7 @@ const BulkQr = () => {
 };
 
 export const QrGeneratorPage = () => {
-  const [mode, setMode] = useState<Mode>("single");
+  const [mode, setMode] = usePersistentState<Mode>("qr:mode", "single");
 
   return (
     <ToolPage

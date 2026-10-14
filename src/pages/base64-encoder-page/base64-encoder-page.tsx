@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { SegmentedControl } from "../../components/common/segmented-control/segmented-control";
 import { ConverterPanes } from "../../components/common/converter-panes/converter-panes";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type Mode = "encode" | "decode";
 
@@ -41,8 +42,8 @@ const decodeBase64 = (text: string): string => {
 };
 
 export const Base64EncoderPage = () => {
-  const [mode, setMode] = useState<Mode>("encode");
-  const [input, setInput] = useState("");
+  const [mode, setMode] = usePersistentState<Mode>("base64:mode", "encode");
+  const [input, setInput] = usePersistentState("base64:input", "");
 
   const { output, error } = useMemo(() => {
     if (input.trim() === "") return { output: "", error: null };

@@ -5,9 +5,12 @@ import { Sidebar } from "./components/layout/sidebar/sidebar";
 import { NavDrawer } from "./components/layout/nav-drawer/nav-drawer";
 import { ToolPage } from "./components/layout/tool-page/tool-page";
 import { PageSkeleton } from "./components/layout/page-skeleton/page-skeleton";
+import { CommandPalette } from "./components/layout/command-palette/command-palette";
 import { HomePage } from "./pages/home-page/home-page";
 import { TOOLS } from "./constants/tools";
 import { routeHref, useHashRoute } from "./hooks/use-hash-route";
+import { recordRecentTool } from "./hooks/use-recent-tools";
+import { isEditableTarget } from "./utils/platform";
 
 const PAGES: Record<string, ComponentType> = {
   "vault-env-converter": lazy(() =>
@@ -94,6 +97,7 @@ const NotFoundPage = () => (
 export const App = () => {
   const route = useHashRoute();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -101,11 +105,35 @@ export const App = () => {
   const Page = route ? PAGES[route] : null;
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closePalette = useCallback(() => setPaletteOpen(false), []);
+  const openPalette = useCallback(() => {
+    setMenuOpen(false);
+    setPaletteOpen(true);
+  }, []);
 
   useEffect(() => {
     document.title = activeTool ? `${activeTool.name} | Devora` : "Devora | Developer tools";
     mainRef.current?.scrollTo({ top: 0 });
+    if (activeTool) recordRecentTool(activeTool.id);
   }, [route, activeTool]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      const isPaletteKey = event.key.toLowerCase() === "k" && (event.ctrlKey || event.metaKey);
+      const isSlash = event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey;
+      if (isPaletteKey) {
+        event.preventDefault();
+        setMenuOpen(false);
+        setPaletteOpen((open) => !open);
+      } else if (isSlash && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        openPalette();
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [openPalette]);
 
   const skipToContent = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -125,19 +153,27 @@ export const App = () => {
       <Header
         menuOpen={menuOpen}
         onMenuClick={() => setMenuOpen(true)}
+        onSearch={openPalette}
         menuButtonRef={menuButtonRef}
       />
 
       <aside className="hidden w-64 shrink-0 border-r border-rule bg-surface lg:block">
-        <Sidebar tools={TOOLS} activeTool={route ? activeTool?.id ?? "" : null} />
+        <Sidebar
+          tools={TOOLS}
+          activeTool={route ? activeTool?.id ?? "" : null}
+          onSearch={openPalette}
+        />
       </aside>
 
       <NavDrawer
         open={menuOpen}
         onClose={closeMenu}
+        onSearch={openPalette}
         tools={TOOLS}
         activeTool={route ? activeTool?.id ?? "" : null}
       />
+
+      <CommandPalette open={paletteOpen} onClose={closePalette} tools={TOOLS} />
 
       <main
         id="main"

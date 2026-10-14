@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { SegmentedControl } from "../../components/common/segmented-control/segmented-control";
 import { ConverterPanes } from "../../components/common/converter-panes/converter-panes";
@@ -6,6 +6,7 @@ import {
   convertVaultToEnv,
   convertEnvToVault,
 } from "../../services/vault-env-converter-service";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type Mode = "vault-to-env" | "env-to-vault";
 
@@ -25,8 +26,8 @@ const ENV_PLACEHOLDER = `DATABASE__HOST=localhost
 DATABASE__PORT=5432`;
 
 export const VaultEnvConverterPage = () => {
-  const [mode, setMode] = useState<Mode>("vault-to-env");
-  const [input, setInput] = useState("");
+  const [mode, setMode] = usePersistentState<Mode>("vault-env:mode", "vault-to-env");
+  const [input, setInput] = usePersistentState("vault-env:input", "");
 
   const result = useMemo(() => {
     if (input.trim() === "") return null;

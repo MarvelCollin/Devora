@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   HiOutlineTrash,
   HiOutlineCheckCircle,
@@ -15,6 +15,7 @@ import {
   minifyJson,
   validateJson,
 } from "../../services/json-formatter-service";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type OutputMode = "pretty" | "minified";
 
@@ -39,9 +40,9 @@ const parseErrorDetail = (text: string): string | null => {
 };
 
 export const JsonFormatterPage = () => {
-  const [input, setInput] = useState("");
-  const [mode, setMode] = useState<OutputMode>("pretty");
-  const [indent, setIndent] = useState(2);
+  const [input, setInput] = usePersistentState("json-formatter:input", "");
+  const [mode, setMode] = usePersistentState<OutputMode>("json-formatter:mode", "pretty");
+  const [indent, setIndent] = usePersistentState("json-formatter:indent", 2);
 
   const hasInput = input.trim() !== "";
 

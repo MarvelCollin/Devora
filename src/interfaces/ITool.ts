@@ -1,6 +1,12 @@
 import type { IconType } from "react-icons";
 
-export type ToolGroup = "Text and data" | "Time and color" | "Images" | "Hardware and network";
+export type ToolGroup =
+  | "Format and convert"
+  | "Encode and decode"
+  | "Text and generators"
+  | "Time and color"
+  | "Images"
+  | "Devices and network";
 
 export interface ITool {
   id: string;

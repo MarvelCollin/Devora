@@ -123,10 +123,10 @@ export const KeyboardTestPage = () => {
         return next;
       });
     };
-    window.addEventListener("keydown", handleIdleKeyDown);
+    window.addEventListener("keydown", handleIdleKeyDown, true);
     window.addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener("keydown", handleIdleKeyDown);
+      window.removeEventListener("keydown", handleIdleKeyDown, true);
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, [record]);

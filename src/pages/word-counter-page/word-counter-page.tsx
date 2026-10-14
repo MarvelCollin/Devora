@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { TextArea } from "../../components/common/text-area/text-area";
@@ -10,13 +10,14 @@ import {
   getWordFrequency,
   formatDuration,
 } from "../../services/word-counter-service";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 const plural = (count: number, word: string) =>
   `${count.toLocaleString()} ${count === 1 ? word : `${word}s`}`;
 
 export const WordCounterPage = () => {
-  const [input, setInput] = useState("");
-  const [ignoreStopWords, setIgnoreStopWords] = useState(true);
+  const [input, setInput] = usePersistentState("word-counter:input", "");
+  const [ignoreStopWords, setIgnoreStopWords] = usePersistentState("word-counter:skip-common", true);
 
   const stats = useMemo(() => analyzeText(input), [input]);
   const frequency = useMemo(

@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { SegmentedControl } from "../../components/common/segmented-control/segmented-control";
 import { ConverterPanes } from "../../components/common/converter-panes/converter-panes";
 import { CopyButton } from "../../components/common/copy-button/copy-button";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type Mode = "encode" | "decode";
 
@@ -41,8 +42,8 @@ const parseQueryString = (url: string): IQueryParam[] => {
 };
 
 export const UrlEncoderPage = () => {
-  const [mode, setMode] = useState<Mode>("encode");
-  const [input, setInput] = useState("");
+  const [mode, setMode] = usePersistentState<Mode>("url:mode", "encode");
+  const [input, setInput] = usePersistentState("url:input", "");
 
   const { output, error, params } = useMemo(() => {
     const empty = { output: "", error: null, params: [] as IQueryParam[] };

@@ -16,10 +16,12 @@ import {
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
 export const TOOL_GROUPS: ToolGroup[] = [
-  "Text and data",
+  "Format and convert",
+  "Encode and decode",
+  "Text and generators",
   "Time and color",
   "Images",
-  "Hardware and network",
+  "Devices and network",
 ];
 
 export const TOOLS: ITool[] = [
@@ -28,7 +30,7 @@ export const TOOLS: ITool[] = [
     name: "JSON Formatter",
     description: "Format, minify and validate JSON",
     icon: HiOutlineCodeBracket,
-    group: "Text and data",
+    group: "Format and convert",
     keywords: ["json", "pretty", "minify", "validate", "beautify"],
   },
   {
@@ -36,7 +38,7 @@ export const TOOLS: ITool[] = [
     name: "Vault / ENV Converter",
     description: "Convert between Vault JSON and ENV variables",
     icon: HiOutlineKey,
-    group: "Text and data",
+    group: "Format and convert",
     keywords: ["vault", "env", "dotenv", "secrets", "json"],
   },
   {
@@ -44,7 +46,7 @@ export const TOOLS: ITool[] = [
     name: "Base64 Encoder",
     description: "Encode text to Base64 or decode it back",
     icon: HiOutlineDocumentDuplicate,
-    group: "Text and data",
+    group: "Encode and decode",
     keywords: ["base64", "encode", "decode", "btoa", "atob"],
   },
   {
@@ -52,7 +54,7 @@ export const TOOLS: ITool[] = [
     name: "URL Encoder",
     description: "Encode and decode URL parts and read query strings",
     icon: HiOutlineLink,
-    group: "Text and data",
+    group: "Encode and decode",
     keywords: ["url", "uri", "percent", "query", "encode", "decode"],
   },
   {
@@ -60,7 +62,7 @@ export const TOOLS: ITool[] = [
     name: "Hash Generator",
     description: "Create SHA-1, SHA-256, SHA-384 and SHA-512 hashes",
     icon: HiOutlineFingerPrint,
-    group: "Text and data",
+    group: "Encode and decode",
     keywords: ["hash", "sha", "sha256", "checksum", "digest"],
   },
   {
@@ -68,7 +70,7 @@ export const TOOLS: ITool[] = [
     name: "Word Counter",
     description: "Count words, characters and sentences, with reading time",
     icon: HiOutlineDocumentText,
-    group: "Text and data",
+    group: "Text and generators",
     keywords: ["words", "characters", "count", "reading time", "text"],
   },
   {
@@ -108,7 +110,7 @@ export const TOOLS: ITool[] = [
     name: "Keyboard Test",
     description: "Check that every key on your keyboard registers",
     icon: HiOutlineComputerDesktop,
-    group: "Hardware and network",
+    group: "Devices and network",
     keywords: ["keyboard", "keys", "keycode", "test"],
   },
   {
@@ -116,7 +118,7 @@ export const TOOLS: ITool[] = [
     name: "Mouse Test",
     description: "Test mouse buttons, scrolling and movement",
     icon: HiOutlineCursorArrowRays,
-    group: "Hardware and network",
+    group: "Devices and network",
     keywords: ["mouse", "click", "scroll", "cursor", "test"],
   },
   {
@@ -124,7 +126,7 @@ export const TOOLS: ITool[] = [
     name: "WiFi Speed Test",
     description: "Measure ping, download and upload speed",
     icon: HiOutlineSignal,
-    group: "Hardware and network",
+    group: "Devices and network",
     keywords: ["wifi", "internet", "speed", "ping", "bandwidth"],
   },
 ];

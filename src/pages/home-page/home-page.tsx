@@ -3,6 +3,9 @@ import { HiOutlineMagnifyingGlass, HiXMark } from "react-icons/hi2";
 import type { ITool } from "../../interfaces/ITool";
 import { TOOL_GROUPS } from "../../constants/tools";
 import { routeHref } from "../../hooks/use-hash-route";
+import { useRecentTools } from "../../hooks/use-recent-tools";
+import { searchTools } from "../../utils/tool-search";
+import { SHORTCUT_LABEL } from "../../utils/platform";
 import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { Button } from "../../components/common/button/button";
 
@@ -10,25 +13,41 @@ interface IHomePageProps {
   tools: ITool[];
 }
 
-const matches = (tool: ITool, query: string) => {
-  const haystack = [tool.name, tool.description, ...tool.keywords]
-    .join(" ")
-    .toLowerCase();
-  return query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean)
-    .every((term) => haystack.includes(term));
-};
+const ToolList = ({ tools }: { tools: ITool[] }) => (
+  <ul className="grid border-t border-rule sm:grid-cols-2 sm:gap-x-8 xl:grid-cols-3">
+    {tools.map((tool) => {
+      const Icon = tool.icon;
+      return (
+        <li key={tool.id} className="border-b border-rule">
+          <a
+            href={routeHref(tool.id)}
+            className="group -mx-3 flex items-start gap-3 rounded-md px-3 py-3.5 transition-colors duration-150 ease-out hover:bg-tint"
+          >
+            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-strong" aria-hidden="true" />
+            <span className="min-w-0">
+              <span className="block font-medium text-ink group-hover:underline group-hover:underline-offset-4">
+                {tool.name}
+              </span>
+              <span className="block text-sm text-muted">{tool.description}</span>
+            </span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+);
 
 export const HomePage = ({ tools }: IHomePageProps) => {
   const [query, setQuery] = useState("");
   const searchId = useId();
+  const recentIds = useRecentTools();
+  const searching = query.trim() !== "";
 
-  const filtered = useMemo(
-    () => (query.trim() ? tools.filter((tool) => matches(tool, query)) : tools),
-    [tools, query]
-  );
+  const results = useMemo(() => searchTools(tools, query), [tools, query]);
+  const recent = recentIds
+    .map((id) => tools.find((tool) => tool.id === id))
+    .filter((tool): tool is ITool => Boolean(tool))
+    .slice(0, 3);
 
   return (
     <ToolPage
@@ -46,7 +65,7 @@ export const HomePage = ({ tools }: IHomePageProps) => {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Try json, hash or image"
+            placeholder="Try json, password or webcam"
             autoComplete="off"
             className="h-full min-w-0 flex-1 bg-transparent text-ink placeholder:text-muted/80 focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
@@ -62,60 +81,49 @@ export const HomePage = ({ tools }: IHomePageProps) => {
           )}
         </div>
         <p className="text-sm text-muted" aria-live="polite">
-          {query.trim()
-            ? `${filtered.length} of ${tools.length} tools match`
-            : `${tools.length} tools in ${TOOL_GROUPS.length} groups`}
+          {searching
+            ? `${results.length} of ${tools.length} tools match`
+            : `${tools.length} tools in ${TOOL_GROUPS.length} groups. Press ${SHORTCUT_LABEL} on any page to jump to a tool.`}
         </p>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-start gap-3 border-t border-rule pt-6">
-          <p className="text-ink">No tool matches "{query.trim()}".</p>
-          <p className="text-sm text-muted">
-            Check the spelling or search by what the tool does, like encode or compress.
-          </p>
-          <Button label="Clear search" onClick={() => setQuery("")} />
-        </div>
+      {searching ? (
+        results.length === 0 ? (
+          <div className="flex flex-col items-start gap-3 border-t border-rule pt-6">
+            <p className="text-ink">No tool matches "{query.trim()}".</p>
+            <p className="text-sm text-muted">
+              Search by what the tool does, like encode, compress, generate or test.
+            </p>
+            <Button label="Clear search" onClick={() => setQuery("")} />
+          </div>
+        ) : (
+          <section aria-labelledby="results-heading">
+            <h2 id="results-heading" className="mb-1 font-mono text-sm font-semibold text-strong">
+              Best matches
+            </h2>
+            <ToolList tools={results} />
+          </section>
+        )
       ) : (
         <div className="flex flex-col gap-8">
+          {recent.length > 0 && (
+            <section aria-labelledby="recent-heading">
+              <h2 id="recent-heading" className="mb-1 font-mono text-sm font-semibold text-strong">
+                Recently used
+              </h2>
+              <ToolList tools={recent} />
+            </section>
+          )}
           {TOOL_GROUPS.map((group) => {
-            const groupTools = filtered.filter((tool) => tool.group === group);
+            const groupTools = tools.filter((tool) => tool.group === group);
             if (groupTools.length === 0) return null;
             const headingId = `home-${group.replace(/\s+/g, "-").toLowerCase()}`;
             return (
               <section key={group} aria-labelledby={headingId}>
-                <h2
-                  id={headingId}
-                  className="mb-1 font-mono text-sm font-semibold text-strong"
-                >
+                <h2 id={headingId} className="mb-1 font-mono text-sm font-semibold text-strong">
                   {group}
                 </h2>
-                <ul className="grid border-t border-rule sm:grid-cols-2 sm:gap-x-8 xl:grid-cols-3">
-                  {groupTools.map((tool) => {
-                    const Icon = tool.icon;
-                    return (
-                      <li key={tool.id} className="border-b border-rule">
-                        <a
-                          href={routeHref(tool.id)}
-                          className="group -mx-3 flex items-start gap-3 rounded-md px-3 py-3.5 transition-colors duration-150 ease-out hover:bg-tint"
-                        >
-                          <Icon
-                            className="mt-0.5 h-5 w-5 shrink-0 text-strong"
-                            aria-hidden="true"
-                          />
-                          <span className="min-w-0">
-                            <span className="block font-medium text-ink group-hover:underline group-hover:underline-offset-4">
-                              {tool.name}
-                            </span>
-                            <span className="block text-sm text-muted">
-                              {tool.description}
-                            </span>
-                          </span>
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <ToolList tools={groupTools} />
               </section>
             );
           })}

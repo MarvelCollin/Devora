@@ -5,6 +5,7 @@ import { TextArea } from "../../components/common/text-area/text-area";
 import { Button } from "../../components/common/button/button";
 import { CopyButton } from "../../components/common/copy-button/copy-button";
 import { Switch } from "../../components/common/switch/switch";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type HashAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
 
@@ -24,12 +25,12 @@ const computeHash = async (text: string, algorithm: HashAlgorithm): Promise<stri
 };
 
 export const HashGeneratorPage = () => {
-  const [input, setInput] = useState("");
+  const [input, setInput] = usePersistentState("hash:input", "");
   const [computed, setComputed] = useState<{
     source: string;
     values: Partial<Record<HashAlgorithm, string>>;
   }>({ source: "", values: {} });
-  const [uppercase, setUppercase] = useState(false);
+  const [uppercase, setUppercase] = usePersistentState("hash:uppercase", false);
 
   useEffect(() => {
     if (input === "") return;

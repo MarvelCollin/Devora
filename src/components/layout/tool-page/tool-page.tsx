@@ -22,7 +22,7 @@ export const ToolPage = ({
   return (
     <div
       className={clsx(
-        "mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-10 lg:py-8",
+        "mx-auto flex w-full max-w-7xl animate-fade-in flex-col px-4 py-6 sm:px-6 lg:px-10 lg:py-8",
         fill && "lg:h-full"
       )}
     >

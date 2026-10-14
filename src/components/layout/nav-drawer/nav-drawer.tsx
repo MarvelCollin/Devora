@@ -7,11 +7,12 @@ import { useFocusTrap } from "../../../hooks/use-focus-trap";
 interface INavDrawerProps {
   open: boolean;
   onClose: () => void;
+  onSearch: () => void;
   tools: ITool[];
   activeTool: string | null;
 }
 
-export const NavDrawer = ({ open, onClose, tools, activeTool }: INavDrawerProps) => {
+export const NavDrawer = ({ open, onClose, onSearch, tools, activeTool }: INavDrawerProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -57,7 +58,7 @@ export const NavDrawer = ({ open, onClose, tools, activeTool }: INavDrawerProps)
           <HiXMark className="h-5 w-5" aria-hidden="true" />
           Close
         </button>
-        <Sidebar tools={tools} activeTool={activeTool} onNavigate={onClose} />
+        <Sidebar tools={tools} activeTool={activeTool} onNavigate={onClose} onSearch={onSearch} />
       </div>
     </div>
   );

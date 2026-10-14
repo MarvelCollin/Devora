@@ -11,6 +11,7 @@ import {
   getTimezoneLabel,
   parseDateTime,
 } from "../../utils/date-utils";
+import { usePersistentState } from "../../hooks/use-persistent-state";
 
 type Mode = "unix-to-date" | "date-to-unix";
 
@@ -71,7 +72,7 @@ const ResultRows = ({ rows }: { rows: IResultRow[] }) => (
 
 export const TimestampConverterPage = () => {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
-  const [mode, setMode] = useState<Mode>("unix-to-date");
+  const [mode, setMode] = usePersistentState<Mode>("timestamp:mode", "unix-to-date");
   const [unixInput, setUnixInput] = useState(() => String(Math.floor(Date.now() / 1000)));
   const [dateInput, setDateInput] = useState(() => formatDateTime(new Date()));
 
