@@ -1,45 +1,64 @@
 import { clsx } from "clsx";
+import { HiArrowPath } from "react-icons/hi2";
 import type { IButtonProps } from "../../../interfaces/ICommon";
+
+const VARIANTS = {
+  primary:
+    "bg-primary text-on-primary shadow-lift hover:bg-primary-hover active:translate-y-px",
+  secondary:
+    "border border-line bg-raised text-ink hover:bg-tint active:translate-y-px",
+  ghost: "text-muted hover:bg-tint hover:text-ink",
+  danger: "text-danger hover:bg-danger-tint",
+};
+
+const SIZES = {
+  sm: "h-8 gap-1.5 px-3 text-sm",
+  md: "h-10 gap-2 px-4 text-sm",
+};
 
 export const Button = ({
   label,
   onClick,
-  variant = "primary",
+  variant = "secondary",
   size = "md",
   disabled = false,
+  loading = false,
   className = "",
   icon: Icon,
   iconPosition = "left",
+  type = "button",
+  ariaLabel,
 }: IButtonProps) => {
-  const baseStyles =
-    "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-950 disabled:opacity-50 disabled:cursor-not-allowed";
-
-  const variants = {
-    primary:
-      "bg-accent-600 text-white hover:bg-accent-500 focus:ring-accent-500 shadow-lg shadow-accent-600/20",
-    secondary:
-      "bg-dark-700 text-dark-200 hover:bg-dark-600 focus:ring-dark-500 border border-dark-600",
-    ghost:
-      "bg-transparent text-dark-300 hover:text-dark-100 hover:bg-dark-800 focus:ring-dark-600",
-    danger:
-      "bg-error-500 text-white hover:bg-error-400 focus:ring-error-500 shadow-lg shadow-error-500/20",
-  };
-
-  const sizes = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
-  };
+  const ShownIcon = loading ? HiArrowPath : Icon;
 
   return (
     <button
-      className={clsx(baseStyles, variants[variant], sizes[size], className)}
+      type={type}
+      className={clsx(
+        "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors duration-150 ease-out",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-y-0",
+        VARIANTS[variant],
+        SIZES[size],
+        className
+      )}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      aria-label={ariaLabel}
     >
-      {Icon && iconPosition === "left" && <Icon className="w-4 h-4" />}
+      {ShownIcon && iconPosition === "left" && (
+        <ShownIcon
+          className={clsx("h-4 w-4 shrink-0", loading && "animate-spin")}
+          aria-hidden="true"
+        />
+      )}
       {label}
-      {Icon && iconPosition === "right" && <Icon className="w-4 h-4" />}
+      {ShownIcon && iconPosition === "right" && (
+        <ShownIcon
+          className={clsx("h-4 w-4 shrink-0", loading && "animate-spin")}
+          aria-hidden="true"
+        />
+      )}
     </button>
   );
 };

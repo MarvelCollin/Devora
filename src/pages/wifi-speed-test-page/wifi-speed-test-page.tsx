@@ -1,260 +1,253 @@
-import { useMemo, useState } from "react";
 import { clsx } from "clsx";
+import { useState } from "react";
 import {
-  HiOutlineSignal,
-  HiOutlineArrowDownTray,
-  HiOutlineArrowUpTray,
-  HiOutlineClock,
   HiOutlinePlay,
-  HiOutlineArrowPath,
+  HiArrowPath,
   HiOutlineCheckCircle,
-  HiOutlineExclamationCircle,
+  HiOutlineMinusCircle,
+  HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
+import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { Button } from "../../components/common/button/button";
+import { SummaryStrip } from "../../components/common/summary-strip/summary-strip";
+import { Notice } from "../../components/common/notice/notice";
 
-type TestStatus = "idle" | "running" | "success" | "error";
+type Step = "ping" | "download" | "upload";
+type Status = "idle" | "running" | "done" | "error";
 
-interface ITestResult {
-  pingMs: number;
-  jitterMs: number;
-  downloadMbps: number;
-  uploadMbps: number;
+interface IResult {
+  pingMs?: number;
+  jitterMs?: number;
+  downloadMbps?: number;
+  uploadMbps?: number;
 }
+
+const STEPS: { id: Step; label: string; detail: string }[] = [
+  { id: "ping", label: "Ping and jitter", detail: "5 small requests" },
+  { id: "download", label: "Download", detail: "10 MB transfer" },
+  { id: "upload", label: "Upload", detail: "2.5 MB transfer" },
+];
 
 const roundToTwo = (value: number): number => Math.round(value * 100) / 100;
 
-const average = (values: number[]): number => {
-  if (values.length === 0) return 0;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-};
+const average = (values: number[]): number =>
+  values.length === 0 ? 0 : values.reduce((sum, value) => sum + value, 0) / values.length;
 
-const calculateJitter = (samples: number[]): number => {
-  if (samples.length < 2) return 0;
-  const diffs: number[] = [];
-  for (let i = 1; i < samples.length; i += 1) {
-    diffs.push(Math.abs(samples[i] - samples[i - 1]));
-  }
-  return average(diffs);
-};
-
-const measurePing = async (sampleCount: number): Promise<{ pingMs: number; jitterMs: number }> => {
+const measurePing = async (sampleCount: number) => {
   const samples: number[] = [];
   for (let i = 0; i < sampleCount; i += 1) {
-    const url = `https://speed.cloudflare.com/cdn-cgi/trace?sample=${Date.now()}-${i}`;
     const start = performance.now();
-    const response = await fetch(url, {
-      cache: "no-store",
-      mode: "cors",
-    });
-    if (!response.ok) {
-      throw new Error("Ping request failed");
-    }
-    const end = performance.now();
-    samples.push(end - start);
+    const response = await fetch(
+      `https://speed.cloudflare.com/cdn-cgi/trace?sample=${Date.now()}-${i}`,
+      { cache: "no-store", mode: "cors" }
+    );
+    if (!response.ok) throw new Error("ping");
+    samples.push(performance.now() - start);
   }
-  return {
-    pingMs: roundToTwo(average(samples)),
-    jitterMs: roundToTwo(calculateJitter(samples)),
-  };
+  const diffs = samples.slice(1).map((sample, i) => Math.abs(sample - samples[i]));
+  return { pingMs: roundToTwo(average(samples)), jitterMs: roundToTwo(average(diffs)) };
 };
 
 const measureDownload = async (): Promise<number> => {
-  const bytes = 10_000_000;
-  const url = `https://speed.cloudflare.com/__down?bytes=${bytes}&sample=${Date.now()}`;
   const start = performance.now();
-  const response = await fetch(url, {
-    cache: "no-store",
-    mode: "cors",
-  });
-  if (!response.ok) {
-    throw new Error("Download test failed");
-  }
+  const response = await fetch(
+    `https://speed.cloudflare.com/__down?bytes=10000000&sample=${Date.now()}`,
+    { cache: "no-store", mode: "cors" }
+  );
+  if (!response.ok) throw new Error("download");
   const buffer = await response.arrayBuffer();
-  const end = performance.now();
-  const seconds = (end - start) / 1000;
+  const seconds = (performance.now() - start) / 1000;
   return roundToTwo((buffer.byteLength * 8) / seconds / 1_000_000);
 };
 
 const measureUpload = async (): Promise<number> => {
   const bytes = 2_500_000;
   const payload = new Uint8Array(bytes);
-  crypto.getRandomValues(payload.subarray(0, Math.min(payload.length, 65_536)));
+  crypto.getRandomValues(payload.subarray(0, 65_536));
   const start = performance.now();
-  const response = await fetch("https://speed.cloudflare.com/__up", {
+  await fetch("https://speed.cloudflare.com/__up", {
     method: "POST",
     body: payload,
     cache: "no-store",
     mode: "no-cors",
   });
-  if (!response) {
-    throw new Error("Upload test failed");
-  }
-  const end = performance.now();
-  const seconds = (end - start) / 1000;
+  const seconds = (performance.now() - start) / 1000;
   return roundToTwo((bytes * 8) / seconds / 1_000_000);
 };
 
-export const WifiSpeedTestPage = () => {
-  const [status, setStatus] = useState<TestStatus>("idle");
-  const [result, setResult] = useState<ITestResult | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [stage, setStage] = useState("Ready");
+const rateConnection = (result: Required<IResult>) => {
+  if (result.downloadMbps >= 100 && result.uploadMbps >= 20 && result.pingMs <= 30)
+    return { label: "Excellent", note: "Fast enough for 4K streaming, large downloads and video calls on many devices." };
+  if (result.downloadMbps >= 50 && result.uploadMbps >= 10 && result.pingMs <= 60)
+    return { label: "Good", note: "Comfortable for HD streaming, video calls and most online games." };
+  if (result.downloadMbps >= 20 && result.uploadMbps >= 5 && result.pingMs <= 90)
+    return { label: "Fair", note: "Fine for browsing and HD video. Calls may stutter when others share the line." };
+  return { label: "Basic", note: "Good for browsing and email. Streaming and calls may buffer." };
+};
 
-  const isRunning = status === "running";
+const StepRow = ({ label, detail, state }: { label: string; detail: string; state: "waiting" | "running" | "done" | "failed" }) => {
+  const icon = {
+    waiting: <HiOutlineMinusCircle className="h-5 w-5 text-muted" aria-hidden="true" />,
+    running: <HiArrowPath className="h-5 w-5 animate-spin text-strong" aria-hidden="true" />,
+    done: <HiOutlineCheckCircle className="h-5 w-5 text-success" aria-hidden="true" />,
+    failed: <HiOutlineExclamationTriangle className="h-5 w-5 text-danger" aria-hidden="true" />,
+  }[state];
+  const stateText = { waiting: "Waiting", running: "Running", done: "Done", failed: "Failed" }[state];
+  return (
+    <li className="flex items-center gap-3 py-2">
+      {icon}
+      <span className="min-w-0 flex-1">
+        <span className={clsx("block text-sm", state === "running" ? "font-semibold text-ink" : "text-ink")}>
+          {label}
+        </span>
+        <span className="block text-xs text-muted">{detail}</span>
+      </span>
+      <span
+        className={clsx(
+          "text-sm",
+          state === "done" && "text-success",
+          state === "failed" && "text-danger",
+          state === "running" && "font-medium text-strong",
+          state === "waiting" && "text-muted"
+        )}
+      >
+        {stateText}
+      </span>
+    </li>
+  );
+};
+
+export const WifiSpeedTestPage = () => {
+  const [status, setStatus] = useState<Status>("idle");
+  const [step, setStep] = useState<Step | null>(null);
+  const [result, setResult] = useState<IResult>({});
 
   const runTest = async () => {
     setStatus("running");
-    setErrorMessage("");
-    setStage("Testing ping and jitter...");
-
+    setResult({});
     try {
-      const pingResult = await measurePing(5);
-
-      setStage("Testing download speed...");
+      setStep("ping");
+      const ping = await measurePing(5);
+      setResult((prev) => ({ ...prev, ...ping }));
+      setStep("download");
       const downloadMbps = await measureDownload();
-
-      setStage("Testing upload speed...");
+      setResult((prev) => ({ ...prev, downloadMbps }));
+      setStep("upload");
       const uploadMbps = await measureUpload();
-
-      setResult({
-        pingMs: pingResult.pingMs,
-        jitterMs: pingResult.jitterMs,
-        downloadMbps,
-        uploadMbps,
-      });
-      setStatus("success");
-      setStage("Completed");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Speed test failed";
+      setResult((prev) => ({ ...prev, uploadMbps }));
+      setStep(null);
+      setStatus("done");
+    } catch {
       setStatus("error");
-      setErrorMessage(message);
-      setStage("Failed");
     }
   };
 
-  const quality = useMemo(() => {
-    if (!result) return "Not measured";
-    if (result.downloadMbps >= 100 && result.uploadMbps >= 20 && result.pingMs <= 30) return "Excellent";
-    if (result.downloadMbps >= 50 && result.uploadMbps >= 10 && result.pingMs <= 60) return "Good";
-    if (result.downloadMbps >= 20 && result.uploadMbps >= 5 && result.pingMs <= 90) return "Fair";
-    return "Basic";
-  }, [result]);
+  const stepState = (id: Step): "waiting" | "running" | "done" | "failed" => {
+    const order = STEPS.findIndex((s) => s.id === id);
+    const current = step ? STEPS.findIndex((s) => s.id === step) : -1;
+    if (status === "done") return "done";
+    if (status === "idle") return "waiting";
+    if (order < current) return "done";
+    if (order === current) return status === "error" ? "failed" : "running";
+    return "waiting";
+  };
+
+  const measured = (value: number | undefined, unit: string, id: Step) => {
+    if (value !== undefined) return `${value} ${unit}`;
+    if (status === "running" && stepState(id) === "running") {
+      return (
+        <>
+          <span className="inline-block h-7 w-24 animate-pulse rounded bg-surface align-middle" aria-hidden="true" />
+          <span className="sr-only">Measuring</span>
+        </>
+      );
+    }
+    return <span className="font-sans text-base font-normal text-muted">Not measured</span>;
+  };
+
+  const rating =
+    status === "done" &&
+    result.pingMs !== undefined &&
+    result.jitterMs !== undefined &&
+    result.downloadMbps !== undefined &&
+    result.uploadMbps !== undefined
+      ? rateConnection(result as Required<IResult>)
+      : null;
+
+  const running = status === "running";
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent-600/10 text-accent-400">
-            <HiOutlineSignal className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-dark-100">WiFi Speed Test</h2>
-            <p className="text-sm text-dark-400">
-              Measure latency, download speed, and upload speed in your browser
-            </p>
-          </div>
-        </div>
+    <ToolPage
+      title="WiFi Speed Test"
+      description="Measure the connection of this browser to the nearest Cloudflare server. The test takes about 10 to 30 seconds."
+      actions={
         <Button
-          label={isRunning ? "Running..." : result ? "Run Again" : "Start Test"}
+          label={running ? "Testing" : status === "idle" ? "Start test" : "Run again"}
           variant="primary"
-          size="md"
+          icon={status === "idle" ? HiOutlinePlay : HiArrowPath}
           onClick={runTest}
-          disabled={isRunning}
-          icon={isRunning ? HiOutlineArrowPath : result ? HiOutlineArrowPath : HiOutlinePlay}
-          className={clsx(isRunning && "animate-pulse")}
+          loading={running}
         />
-      </div>
+      }
+    >
+      <SummaryStrip
+        label="Speed test results"
+        items={[
+          {
+            label: "Download",
+            value: measured(result.downloadMbps, "Mbps", "download"),
+            context: rating ? `Connection quality: ${rating.label}` : "Megabits per second",
+            lead: true,
+          },
+          { label: "Upload", value: measured(result.uploadMbps, "Mbps", "upload") },
+          {
+            label: "Ping",
+            value: measured(result.pingMs, "ms", "ping"),
+            context: "Lower is better",
+          },
+          { label: "Jitter", value: measured(result.jitterMs, "ms", "ping") },
+        ]}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">Ping</span>
-            <HiOutlineClock className="w-4 h-4 text-dark-500" />
-          </div>
-          <p className="text-2xl font-semibold text-dark-100">
-            {result ? `${result.pingMs} ms` : "-"}
-          </p>
-        </div>
+      {status === "error" && (
+        <Notice
+          tone="error"
+          action={<Button label="Try again" variant="secondary" size="sm" onClick={runTest} />}
+        >
+          The test could not reach the speed test server. Check that you are online and that an
+          ad blocker or VPN is not blocking speed.cloudflare.com.
+        </Notice>
+      )}
 
-        <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">Jitter</span>
-            <HiOutlineClock className="w-4 h-4 text-dark-500" />
-          </div>
-          <p className="text-2xl font-semibold text-dark-100">
-            {result ? `${result.jitterMs} ms` : "-"}
-          </p>
-        </div>
+      {rating && (
+        <p className="max-w-prose text-ink">
+          <span className="font-semibold">{rating.label}.</span> {rating.note}
+        </p>
+      )}
 
-        <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">Download</span>
-            <HiOutlineArrowDownTray className="w-4 h-4 text-dark-500" />
-          </div>
-          <p className="text-2xl font-semibold text-dark-100">
-            {result ? `${result.downloadMbps} Mbps` : "-"}
-          </p>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <section aria-labelledby="steps-heading">
+          <h2 id="steps-heading" className="mb-1 text-sm font-medium text-ink">
+            Progress
+          </h2>
+          <ol className="divide-y divide-rule border-y border-rule" aria-live="polite">
+            {STEPS.map((s) => (
+              <StepRow key={s.id} label={s.label} detail={s.detail} state={stepState(s.id)} />
+            ))}
+          </ol>
+        </section>
 
-        <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">Upload</span>
-            <HiOutlineArrowUpTray className="w-4 h-4 text-dark-500" />
-          </div>
-          <p className="text-2xl font-semibold text-dark-100">
-            {result ? `${result.uploadMbps} Mbps` : "-"}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 flex-1 min-h-0">
-        <div className="xl:col-span-2 p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold mb-3 block">Status</span>
-          <div className="flex items-center gap-2 mb-3">
-            {status === "success" && <HiOutlineCheckCircle className="w-5 h-5 text-success-400" />}
-            {status === "error" && <HiOutlineExclamationCircle className="w-5 h-5 text-error-400" />}
-            {(status === "idle" || status === "running") && <HiOutlineSignal className="w-5 h-5 text-accent-400" />}
-            <p className="text-sm text-dark-300">{stage}</p>
-          </div>
-
-          {status === "error" && (
-            <div className="rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2 text-sm text-error-400">
-              {errorMessage}
-            </div>
-          )}
-
-          {status === "idle" && (
-            <p className="text-sm text-dark-400">
-              Press Start Test to run connection checks from this browser session.
-            </p>
-          )}
-
-          {status === "success" && result && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-              <div className="rounded-lg border border-dark-700 bg-dark-800 px-3 py-2">
-                <p className="text-xs uppercase tracking-wider text-dark-500 mb-1">Connection Quality</p>
-                <p className="text-lg font-semibold text-accent-400">{quality}</p>
-              </div>
-              <div className="rounded-lg border border-dark-700 bg-dark-800 px-3 py-2">
-                <p className="text-xs uppercase tracking-wider text-dark-500 mb-1">Realtime Result</p>
-                <p className="text-sm text-dark-200">
-                  {`Down ${result.downloadMbps} Mbps | Up ${result.uploadMbps} Mbps | Ping ${result.pingMs} ms`}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold mb-3 block">Test Scope</span>
-          <ul className="space-y-2 text-sm text-dark-300">
-            <li>Ping and jitter are measured with repeated requests.</li>
-            <li>Download speed uses a large binary transfer.</li>
-            <li>Upload speed sends binary payload data.</li>
-            <li>Values can vary by browser, network load, and VPN usage.</li>
+        <section aria-labelledby="about-heading">
+          <h2 id="about-heading" className="mb-2 text-sm font-medium text-ink">
+            About this test
+          </h2>
+          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-muted">
+            <li>Ping is the average time of five small requests. Jitter is how much that time varies.</li>
+            <li>Download and upload send real data, so the test uses about 12.5 MB.</li>
+            <li>Results change with network load, distance to the server and VPN use.</li>
           </ul>
-        </div>
+        </section>
       </div>
-    </div>
+    </ToolPage>
   );
 };

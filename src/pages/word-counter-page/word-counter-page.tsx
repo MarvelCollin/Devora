@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
-import { HiOutlineDocumentText, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineTrash } from "react-icons/hi2";
+import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { TextArea } from "../../components/common/text-area/text-area";
 import { Button } from "../../components/common/button/button";
+import { Switch } from "../../components/common/switch/switch";
+import { SummaryStrip } from "../../components/common/summary-strip/summary-strip";
 import {
   analyzeText,
   getWordFrequency,
   formatDuration,
 } from "../../services/word-counter-service";
+
+const plural = (count: number, word: string) =>
+  `${count.toLocaleString()} ${count === 1 ? word : `${word}s`}`;
 
 export const WordCounterPage = () => {
   const [input, setInput] = useState("");
@@ -17,116 +23,119 @@ export const WordCounterPage = () => {
     () => getWordFrequency(input, ignoreStopWords),
     [input, ignoreStopWords]
   );
-
-  const statItems = [
-    { label: "Words", value: stats.words.toLocaleString() },
-    { label: "Characters", value: stats.characters.toLocaleString() },
-    { label: "Without Spaces", value: stats.charactersNoSpaces.toLocaleString() },
-    { label: "Unique Words", value: stats.uniqueWords.toLocaleString() },
-    { label: "Sentences", value: stats.sentences.toLocaleString() },
-    { label: "Paragraphs", value: stats.paragraphs.toLocaleString() },
-    { label: "Reading Time", value: formatDuration(stats.readingSeconds) },
-    { label: "Speaking Time", value: formatDuration(stats.speakingSeconds) },
-  ];
+  const topCount = frequency[0]?.count ?? 0;
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent-600/10 text-accent-400">
-            <HiOutlineDocumentText className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-dark-100">
-              Word Counter
-            </h2>
-            <p className="text-sm text-dark-400">
-              Count words, characters, sentences, and reading time
-            </p>
-          </div>
-        </div>
-        <Button
-          label="Clear"
-          variant="ghost"
-          size="sm"
-          onClick={() => setInput("")}
-          icon={HiOutlineTrash}
+    <ToolPage
+      title="Word Counter"
+      description="Paste or type text to count words and characters and estimate how long it takes to read."
+      fill
+    >
+      <SummaryStrip
+        label="Text statistics"
+        items={[
+          {
+            label: "Words",
+            value: stats.words.toLocaleString(),
+            context: `${stats.uniqueWords.toLocaleString()} unique`,
+            lead: true,
+          },
+          {
+            label: "Characters",
+            value: stats.characters.toLocaleString(),
+            context: `${stats.charactersNoSpaces.toLocaleString()} without spaces`,
+          },
+          {
+            label: "Sentences",
+            value: stats.sentences.toLocaleString(),
+            context: plural(stats.paragraphs, "paragraph"),
+          },
+          {
+            label: "Reading time",
+            value: formatDuration(stats.readingSeconds),
+            context: "at 238 words a minute",
+          },
+          {
+            label: "Speaking time",
+            value: formatDuration(stats.speakingSeconds),
+            context: "at 150 words a minute",
+          },
+        ]}
+      />
+
+      <div className="grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <TextArea
+          label="Text"
+          value={input}
+          onChange={setInput}
+          placeholder="Type or paste your text"
+          hint={plural(stats.lines, "line")}
+          prose
+          actions={
+            <Button
+              label="Clear"
+              variant="ghost"
+              size="sm"
+              onClick={() => setInput("")}
+              disabled={!input}
+              icon={HiOutlineTrash}
+            />
+          }
         />
-      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {statItems.map((item) => (
-          <div
-            key={item.label}
-            className="p-4 rounded-xl bg-dark-900 border border-dark-700"
+        <section aria-labelledby="top-words-heading" className="flex min-h-0 flex-col gap-2">
+          <h2
+            id="top-words-heading"
+            className="flex min-h-8 items-center text-sm font-medium text-ink"
           >
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">
-              {item.label}
-            </span>
-            <p className="mt-1 text-2xl font-semibold text-dark-100 truncate">
-              {item.value}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex gap-4 flex-1 min-h-0">
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-dark-300">Input Text</span>
-            <span className="text-xs text-dark-500">
-              {stats.lines.toLocaleString()} {stats.lines === 1 ? "line" : "lines"}
-            </span>
-          </div>
-          <TextArea
-            value={input}
-            onChange={setInput}
-            placeholder="Type or paste text to count words..."
-            rows={20}
+            Top words
+          </h2>
+          <Switch
+            label="Skip common words like the and of"
+            checked={ignoreStopWords}
+            onChange={setIgnoreStopWords}
           />
-        </div>
-
-        <div className="w-72 flex flex-col min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-dark-300">Top Words</span>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={ignoreStopWords}
-                onChange={(e) => setIgnoreStopWords(e.target.checked)}
-                className="w-4 h-4 rounded border-dark-600 bg-dark-800 text-accent-600 focus:ring-accent-500 focus:ring-offset-0 cursor-pointer"
-              />
-              <span className="text-xs text-dark-400">Ignore common words</span>
-            </label>
-          </div>
-          <div className="flex-1 min-h-[200px] rounded-xl bg-dark-900 border border-dark-700 overflow-y-auto">
-            {frequency.length === 0 ? (
-              <p className="p-4 text-sm text-dark-500">
-                Word frequency will appear here
-              </p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-dark-800">
-                    <th className="text-left px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider font-semibold">Word</th>
-                    <th className="text-right px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider font-semibold">Count</th>
-                    <th className="text-right px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider font-semibold">%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {frequency.map((item) => (
-                    <tr key={item.word} className="border-t border-dark-700">
-                      <td className="px-4 py-2 font-mono text-accent-400 truncate max-w-[120px]">{item.word}</td>
-                      <td className="px-4 py-2 text-right font-mono text-dark-200">{item.count}</td>
-                      <td className="px-4 py-2 text-right font-mono text-dark-400">{item.density.toFixed(1)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+          {frequency.length === 0 ? (
+            <p className="rounded-lg border border-rule bg-surface px-4 py-6 text-sm text-muted">
+              The most used words show up here once you add text.
+            </p>
+          ) : (
+            <div
+              tabIndex={0}
+              role="region"
+              aria-label="Top words list"
+              className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-rule bg-raised"
+            >
+              <ol className="flex flex-col">
+                {frequency.map((item, index) => (
+                  <li
+                    key={item.word}
+                    className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-rule px-3 py-2 last:border-b-0"
+                  >
+                    <span className="text-right font-mono text-xs tabular-nums text-muted">
+                      {index + 1}
+                    </span>
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <span className="font-mono text-sm break-all text-ink">{item.word}</span>
+                      <span
+                        className="h-1 rounded-full bg-soft"
+                        style={{ width: `${(item.count / topCount) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span className="text-right font-mono text-sm tabular-nums text-ink">
+                      {item.count}
+                      <span className="block text-xs text-muted">
+                        {item.density.toFixed(1)}%
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </ToolPage>
   );
 };

@@ -24,6 +24,7 @@ export const parseBulkCsv = (text: string): BulkQrEntry[] => {
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
+    .filter((line) => line.replace(/\s+/g, "").toLowerCase() !== "value,title,count")
     .map((line) => {
       const parts = line.split(",").map((p) => p.trim());
       return {

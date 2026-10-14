@@ -12,17 +12,3 @@ export interface IConversionResult {
   data: string;
   error?: string;
 }
-
-export interface IVaultEnvConverterState {
-  input: string;
-  output: string;
-  mode: "vault-to-env" | "env-to-vault";
-  error: string | null;
-}
-
-export interface IJsonFormatterState {
-  input: string;
-  output: string;
-  error: string | null;
-  indentSize: number;
-}

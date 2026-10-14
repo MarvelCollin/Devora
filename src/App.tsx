@@ -1,21 +1,9 @@
-import { useState } from "react";
-import {
-  HiOutlineKey,
-  HiOutlineCodeBracket,
-  HiOutlineComputerDesktop,
-  HiOutlineCursorArrowRays,
-  HiOutlineSignal,
-  HiOutlineClock,
-  HiOutlineFingerPrint,
-  HiOutlineDocumentDuplicate,
-  HiOutlineLink,
-  HiOutlineSwatch,
-  HiOutlineQrCode,
-  HiOutlinePhoto,
-  HiOutlineDocumentText,
-} from "react-icons/hi2";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { JSX, MouseEvent } from "react";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
+import { NavDrawer } from "./components/layout/nav-drawer/nav-drawer";
+import { ToolPage } from "./components/layout/tool-page/tool-page";
 import { HomePage } from "./pages/home-page/home-page";
 import { VaultEnvConverterPage } from "./pages/vault-env-converter-page/vault-env-converter-page";
 import { JsonFormatterPage } from "./pages/json-formatter-page/json-formatter-page";
@@ -30,164 +18,107 @@ import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-
 import { QrGeneratorPage } from "./pages/qr-generator-page/qr-generator-page";
 import { ImageCompressorPage } from "./pages/image-compressor-page/image-compressor-page";
 import { WordCounterPage } from "./pages/word-counter-page/word-counter-page";
-import type { ITool } from "./interfaces/ITool";
+import { TOOLS } from "./constants/tools";
+import { routeHref, useHashRoute } from "./hooks/use-hash-route";
 
-const tools: ITool[] = [
-  {
-    id: "vault-env-converter",
-    name: "Vault / ENV Converter",
-    description: "Convert between Vault JSON format and ENV variables seamlessly",
-    icon: HiOutlineKey,
-    path: "/vault-env-converter",
-  },
-  {
-    id: "json-formatter",
-    name: "JSON Formatter",
-    description: "Format, validate, and beautify JSON data with syntax highlighting",
-    icon: HiOutlineCodeBracket,
-    path: "/json-formatter",
-  },
-  {
-    id: "keyboard-test",
-    name: "Keyboard Test",
-    description: "Test your keyboard keys and see real-time key press information",
-    icon: HiOutlineComputerDesktop,
-    path: "/keyboard-test",
-  },
-  {
-    id: "mouse-test",
-    name: "Mouse Test",
-    description: "Test your mouse buttons, scroll wheel, and track cursor movement",
-    icon: HiOutlineCursorArrowRays,
-    path: "/mouse-test",
-  },
-  {
-    id: "timestamp-converter",
-    name: "Timestamp Converter",
-    description: "Convert between Unix timestamps and human-readable dates instantly",
-    icon: HiOutlineClock,
-    path: "/timestamp-converter",
-  },
-  {
-    id: "hash-generator",
-    name: "Hash Generator",
-    description: "Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any text",
-    icon: HiOutlineFingerPrint,
-    path: "/hash-generator",
-  },
-  {
-    id: "base64-encoder",
-    name: "Base64 Encoder / Decoder",
-    description: "Encode text to Base64 or decode Base64 strings back to text",
-    icon: HiOutlineDocumentDuplicate,
-    path: "/base64-encoder",
-  },
-  {
-    id: "url-encoder",
-    name: "URL Encoder / Decoder",
-    description: "Encode and decode URL components and parse query strings",
-    icon: HiOutlineLink,
-    path: "/url-encoder",
-  },
-  {
-    id: "color-converter",
-    name: "Color Converter",
-    description: "Convert colors between HEX, RGB, and HSL formats with live preview",
-    icon: HiOutlineSwatch,
-    path: "/color-converter",
-  },
-  {
-    id: "wifi-speed-test",
-    name: "WiFi Speed Test",
-    description: "Measure your connection latency, download speed, and upload speed",
-    icon: HiOutlineSignal,
-    path: "/wifi-speed-test",
-  },
-  {
-    id: "qr-generator",
-    name: "QR Code Generator",
-    description: "Generate single or bulk QR codes with PDF export",
-    icon: HiOutlineQrCode,
-    path: "/qr-generator",
-  },
-  {
-    id: "image-compressor",
-    name: "Image Compressor",
-    description: "Compress and resize images with adjustable quality and format",
-    icon: HiOutlinePhoto,
-    path: "/image-compressor",
-  },
-  {
-    id: "word-counter",
-    name: "Word Counter",
-    description: "Count words, characters, sentences, and estimate reading time",
-    icon: HiOutlineDocumentText,
-    path: "/word-counter",
-  },
-];
+const PAGES: Record<string, () => JSX.Element> = {
+  "vault-env-converter": VaultEnvConverterPage,
+  "json-formatter": JsonFormatterPage,
+  "keyboard-test": KeyboardTestPage,
+  "mouse-test": MouseTestPage,
+  "timestamp-converter": TimestampConverterPage,
+  "hash-generator": HashGeneratorPage,
+  "base64-encoder": Base64EncoderPage,
+  "url-encoder": UrlEncoderPage,
+  "color-converter": ColorConverterPage,
+  "wifi-speed-test": WifiSpeedTestPage,
+  "qr-generator": QrGeneratorPage,
+  "image-compressor": ImageCompressorPage,
+  "word-counter": WordCounterPage,
+};
+
+const NotFoundPage = () => (
+  <ToolPage
+    title="Tool not found"
+    description="This link does not match any tool. It may have been renamed."
+  >
+    <a
+      href={routeHref(null)}
+      className="w-fit font-medium text-strong underline underline-offset-4 hover:text-ink"
+    >
+      Browse all tools
+    </a>
+  </ToolPage>
+);
 
 export const App = () => {
-  const [activeTool, setActiveTool] = useState<string | null>(null);
+  const route = useHashRoute();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const firstRender = useRef(true);
 
-  const handleToolSelect = (toolId: string) => {
-    setActiveTool(toolId);
-  };
+  const activeTool = TOOLS.find((tool) => tool.id === route) ?? null;
+  const Page = route ? PAGES[route] : null;
 
-  const handleHomeClick = () => {
-    setActiveTool(null);
-  };
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
-  const getPageTitle = (): string => {
-    if (!activeTool) return "Home";
-    const tool = tools.find((t) => t.id === activeTool);
-    return tool?.name ?? "Home";
-  };
-
-  const renderActivePage = () => {
-    switch (activeTool) {
-      case "vault-env-converter":
-        return <VaultEnvConverterPage />;
-      case "json-formatter":
-        return <JsonFormatterPage />;
-      case "keyboard-test":
-        return <KeyboardTestPage />;
-      case "mouse-test":
-        return <MouseTestPage />;
-      case "timestamp-converter":
-        return <TimestampConverterPage />;
-      case "hash-generator":
-        return <HashGeneratorPage />;
-      case "base64-encoder":
-        return <Base64EncoderPage />;
-      case "url-encoder":
-        return <UrlEncoderPage />;
-      case "color-converter":
-        return <ColorConverterPage />;
-      case "wifi-speed-test":
-        return <WifiSpeedTestPage />;
-      case "qr-generator":
-        return <QrGeneratorPage />;
-      case "image-compressor":
-        return <ImageCompressorPage />;
-      case "word-counter":
-        return <WordCounterPage />;
-      default:
-        return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
+  useEffect(() => {
+    document.title = activeTool ? `${activeTool.name} | Devora` : "Devora | Developer tools";
+    mainRef.current?.scrollTo({ top: 0 });
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
     }
+    document.getElementById("page-title")?.focus();
+  }, [route, activeTool]);
+
+  const skipToContent = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    mainRef.current?.focus();
   };
 
   return (
-    <div className="flex flex-col h-screen bg-dark-950">
-      <Header title={getPageTitle()} onHomeClick={handleHomeClick} />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          tools={tools}
-          activeTool={activeTool}
-          onToolSelect={handleToolSelect}
-          onHomeClick={handleHomeClick}
-        />
-        <main className="flex-1 overflow-auto">{renderActivePage()}</main>
-      </div>
+    <div className="flex h-dvh flex-col bg-canvas text-ink lg:flex-row">
+      <a
+        href="#main"
+        onClick={skipToContent}
+        className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to content
+      </a>
+
+      <Header
+        menuOpen={menuOpen}
+        onMenuClick={() => setMenuOpen(true)}
+        menuButtonRef={menuButtonRef}
+      />
+
+      <aside className="hidden w-64 shrink-0 border-r border-rule bg-surface lg:block">
+        <Sidebar tools={TOOLS} activeTool={route ? activeTool?.id ?? "" : null} />
+      </aside>
+
+      <NavDrawer
+        open={menuOpen}
+        onClose={closeMenu}
+        tools={TOOLS}
+        activeTool={route ? activeTool?.id ?? "" : null}
+      />
+
+      <main
+        id="main"
+        ref={mainRef}
+        tabIndex={-1}
+        className="min-h-0 flex-1 overflow-y-auto"
+      >
+        {route === null ? (
+          <HomePage tools={TOOLS} />
+        ) : Page ? (
+          <Page key={route} />
+        ) : (
+          <NotFoundPage />
+        )}
+      </main>
     </div>
   );
 };

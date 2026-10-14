@@ -1,14 +1,12 @@
 import type { IconType } from "react-icons";
 
+export type ToolGroup = "Text and data" | "Time and color" | "Images" | "Hardware and network";
+
 export interface ITool {
   id: string;
   name: string;
   description: string;
   icon: IconType;
-  path: string;
-}
-
-export interface IToolState {
-  activeTool: string | null;
-  tools: ITool[];
+  group: ToolGroup;
+  keywords: string[];
 }

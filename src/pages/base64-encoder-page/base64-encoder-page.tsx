@@ -1,186 +1,106 @@
-import { useState, useEffect } from "react";
-import { clsx } from "clsx";
-import {
-  HiOutlineDocumentDuplicate,
-  HiOutlineClipboardDocument,
-  HiCheck,
-  HiOutlineTrash,
-  HiArrowsRightLeft,
-} from "react-icons/hi2";
-import { TextArea } from "../../components/common/text-area/text-area";
-import { Button } from "../../components/common/button/button";
-import { useClipboard } from "../../hooks/use-clipboard";
+import { useMemo, useState } from "react";
+import { ToolPage } from "../../components/layout/tool-page/tool-page";
+import { SegmentedControl } from "../../components/common/segmented-control/segmented-control";
+import { ConverterPanes } from "../../components/common/converter-panes/converter-panes";
 
 type Mode = "encode" | "decode";
 
-export const Base64EncoderPage = () => {
-  const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
-  const [mode, setMode] = useState<Mode>("encode");
-  const [error, setError] = useState<string | null>(null);
-  const { copied, copy } = useClipboard();
+const MODE_OPTIONS: { value: Mode; label: string }[] = [
+  { value: "encode", label: "Encode" },
+  { value: "decode", label: "Decode" },
+];
 
-  useEffect(() => {
-    if (input.trim() === "") {
-      setOutput("");
-      setError(null);
-      return;
-    }
-    if (mode === "encode") {
-      try {
-        const encoded = btoa(
-          new TextEncoder()
-            .encode(input)
-            .reduce((acc, byte) => acc + String.fromCharCode(byte), "")
-        );
-        setOutput(encoded);
-        setError(null);
-      } catch {
-        setOutput("");
-        setError("Failed to encode input");
-      }
-    } else {
-      try {
-        const binaryString = atob(input.trim());
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const decoded = new TextDecoder().decode(bytes);
-        setOutput(decoded);
-        setError(null);
-      } catch {
-        setOutput("");
-        setError("Invalid Base64 string");
-      }
+const encodeBase64 = (text: string): string =>
+  btoa(
+    new TextEncoder()
+      .encode(text)
+      .reduce((acc, byte) => acc + String.fromCharCode(byte), "")
+  );
+
+const INVALID_BASE64 =
+  "This is not valid Base64. Use only letters, digits, plus, slash and trailing equals signs.";
+const BINARY_BASE64 =
+  "This Base64 is valid but holds binary data, not text, so it cannot be shown here.";
+
+const decodeBase64 = (text: string): string => {
+  let binary: string;
+  try {
+    binary = atob(text.replace(/\s+/g, ""));
+  } catch {
+    throw new Error(INVALID_BASE64);
+  }
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    throw new Error(BINARY_BASE64);
+  }
+};
+
+export const Base64EncoderPage = () => {
+  const [mode, setMode] = useState<Mode>("encode");
+  const [input, setInput] = useState("");
+
+  const { output, error } = useMemo(() => {
+    if (input.trim() === "") return { output: "", error: null };
+    try {
+      return {
+        output: mode === "encode" ? encodeBase64(input) : decodeBase64(input),
+        error: null,
+      };
+    } catch (caught) {
+      return {
+        output: "",
+        error:
+          mode === "encode"
+            ? "This text could not be encoded."
+            : caught instanceof Error
+              ? caught.message
+              : INVALID_BASE64,
+      };
     }
   }, [input, mode]);
 
-  const handleClear = () => {
+  const changeMode = (next: Mode) => {
+    setMode(next);
     setInput("");
-    setOutput("");
-    setError(null);
   };
 
-  const handleSwap = () => {
-    const newMode = mode === "encode" ? "decode" : "encode";
+  const swap = () => {
+    setMode(mode === "encode" ? "decode" : "encode");
     setInput(output);
-    setOutput("");
-    setError(null);
-    setMode(newMode);
   };
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent-600/10 text-accent-400">
-            <HiOutlineDocumentDuplicate className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-dark-100">
-              Base64 Encoder / Decoder
-            </h2>
-            <p className="text-sm text-dark-400">
-              Encode text to Base64 or decode Base64 to text
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center p-1 rounded-lg bg-dark-800 border border-dark-700">
-            <button
-              onClick={() => { setMode("encode"); setInput(""); setOutput(""); setError(null); }}
-              className={clsx(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                mode === "encode"
-                  ? "bg-accent-600 text-white shadow-lg shadow-accent-600/20"
-                  : "text-dark-400 hover:text-dark-200"
-              )}
-            >
-              Encode
-            </button>
-            <button
-              onClick={() => { setMode("decode"); setInput(""); setOutput(""); setError(null); }}
-              className={clsx(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                mode === "decode"
-                  ? "bg-accent-600 text-white shadow-lg shadow-accent-600/20"
-                  : "text-dark-400 hover:text-dark-200"
-              )}
-            >
-              Decode
-            </button>
-          </div>
-          <Button
-            label="Clear"
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            icon={HiOutlineTrash}
-          />
-        </div>
-      </div>
-
-      <div className="flex gap-4 flex-1 min-h-0">
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-dark-300">
-              {mode === "encode" ? "Plain Text" : "Base64 Input"}
-            </span>
-          </div>
-          <TextArea
-            value={input}
-            onChange={setInput}
-            placeholder={
-              mode === "encode"
-                ? "Type or paste text to encode..."
-                : "Paste Base64 string to decode..."
-            }
-            rows={20}
-          />
-        </div>
-
-        <div className="flex flex-col items-center justify-center gap-2">
-          <button
-            onClick={handleSwap}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-dark-800 border border-dark-700 text-dark-400 transition-all duration-200 hover:bg-dark-700 hover:text-accent-400 hover:border-accent-500/50"
-          >
-            <HiArrowsRightLeft className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-dark-300">
-              {mode === "encode" ? "Base64 Output" : "Decoded Text"}
-            </span>
-            <Button
-              label={copied ? "Copied" : "Copy"}
-              variant={copied ? "primary" : "ghost"}
-              size="sm"
-              onClick={() => copy(output)}
-              disabled={!output}
-              icon={copied ? HiCheck : HiOutlineClipboardDocument}
-            />
-          </div>
-          <TextArea
-            value={output}
-            onChange={() => {}}
-            placeholder={
-              mode === "encode"
-                ? "Base64 encoded result..."
-                : "Decoded text will appear here..."
-            }
-            rows={20}
-            readOnly
-          />
-          {error && (
-            <div className="mt-3 px-4 py-3 rounded-lg bg-error-500/10 border border-error-500/20 text-error-400 text-sm">
-              {error}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <ToolPage
+      title="Base64 Encoder"
+      description="Encode text to Base64 or decode Base64 back to text. Unicode is supported."
+      fill
+      actions={
+        <SegmentedControl
+          label="Mode"
+          options={MODE_OPTIONS}
+          value={mode}
+          onChange={changeMode}
+        />
+      }
+    >
+      <ConverterPanes
+        inputLabel={mode === "encode" ? "Plain text" : "Base64"}
+        outputLabel={mode === "encode" ? "Base64" : "Plain text"}
+        input={input}
+        onInputChange={setInput}
+        inputPlaceholder={
+          mode === "encode" ? "Type or paste text to encode" : "Paste Base64 to decode"
+        }
+        output={output}
+        outputPlaceholder={mode === "encode" ? "Base64 shows up here" : "Decoded text shows up here"}
+        error={error}
+        onSwap={swap}
+      />
+    </ToolPage>
   );
 };

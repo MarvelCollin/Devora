@@ -1,13 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { DragEvent } from "react";
 import { clsx } from "clsx";
 import {
-  HiOutlinePhoto,
   HiOutlineArrowUpTray,
-  HiOutlineDocumentArrowDown,
+  HiOutlineArrowDownTray,
   HiOutlineArchiveBox,
   HiOutlineTrash,
 } from "react-icons/hi2";
+import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { Button } from "../../components/common/button/button";
+import { SegmentedControl } from "../../components/common/segmented-control/segmented-control";
+import { Slider } from "../../components/common/slider/slider";
+import { SummaryStrip } from "../../components/common/summary-strip/summary-strip";
+import { Notice } from "../../components/common/notice/notice";
+import { useDebouncedValue } from "../../hooks/use-debounced-value";
 import {
   compressImage,
   downloadBlob,
@@ -17,18 +23,26 @@ import {
   type CompressedResult,
 } from "../../services/image-compressor-service";
 
+interface IComputed {
+  files: File[];
+  format: OutputFormat;
+  quality: number;
+  maxWidth: number;
+  results: CompressedResult[];
+}
+
 const FORMATS: { value: OutputFormat; label: string }[] = [
-  { value: "image/jpeg", label: "JPEG" },
   { value: "image/webp", label: "WebP" },
+  { value: "image/jpeg", label: "JPEG" },
   { value: "image/png", label: "PNG" },
 ];
 
 const WIDTH_PRESETS: { value: number; label: string }[] = [
-  { value: 0, label: "Original" },
-  { value: 1920, label: "1920px" },
-  { value: 1280, label: "1280px" },
-  { value: 800, label: "800px" },
-  { value: 480, label: "480px" },
+  { value: 0, label: "None" },
+  { value: 1920, label: "1920" },
+  { value: 1280, label: "1280" },
+  { value: 800, label: "800" },
+  { value: 480, label: "480" },
 ];
 
 const revokeResults = (results: CompressedResult[]) => {
@@ -38,32 +52,55 @@ const revokeResults = (results: CompressedResult[]) => {
   });
 };
 
+const changeLabel = (original: number, compressed: number) => {
+  if (original === 0) return { text: "No change", smaller: true };
+  const ratio = Math.round(((original - compressed) / original) * 100);
+  return ratio >= 0
+    ? { text: `${ratio}% smaller`, smaller: true }
+    : { text: `${Math.abs(ratio)}% larger`, smaller: false };
+};
+
 export const ImageCompressorPage = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [results, setResults] = useState<CompressedResult[]>([]);
+  const [computed, setComputed] = useState<IComputed | null>(null);
   const [format, setFormat] = useState<OutputFormat>("image/webp");
-  const [quality, setQuality] = useState(0.75);
+  const [qualityInput, setQualityInput] = useState(75);
   const [maxWidth, setMaxWidth] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const [zipping, setZipping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<CompressedResult[]>([]);
+  const quality = useDebouncedValue(qualityInput, 250) / 100;
 
   useEffect(() => {
-    resultsRef.current = results;
-  }, [results]);
+    resultsRef.current = computed?.results ?? [];
+  }, [computed]);
+
+  useEffect(() => () => revokeResults(resultsRef.current), []);
 
   useEffect(() => {
     if (files.length === 0) return;
     let cancelled = false;
-    Promise.all(
-      files.map((file) => compressImage(file, { format, quality, maxWidth }))
-    ).then((next) => {
+    const options = { format, quality, maxWidth };
+    Promise.allSettled(files.map((file) => compressImage(file, options))).then((outcomes) => {
+      const results = outcomes.flatMap((outcome) =>
+        outcome.status === "fulfilled" ? [outcome.value] : []
+      );
       if (cancelled) {
-        revokeResults(next);
+        revokeResults(results);
         return;
       }
+      const failed = files.filter((_, i) => outcomes[i].status === "rejected");
       revokeResults(resultsRef.current);
-      setResults(next);
+      if (failed.length > 0) {
+        revokeResults(results);
+        setSkipped((prev) => [...prev, ...failed.map((file) => file.name)]);
+        setFiles(files.filter((_, i) => outcomes[i].status === "fulfilled"));
+        setComputed(null);
+        return;
+      }
+      setComputed({ files, format, quality, maxWidth, results });
     });
     return () => {
       cancelled = true;
@@ -72,302 +109,287 @@ export const ImageCompressorPage = () => {
 
   const addFiles = (fileList: FileList | null) => {
     if (!fileList) return;
-    const images = Array.from(fileList).filter((file) =>
-      file.type.startsWith("image/")
-    );
-    if (images.length === 0) return;
-    setFiles((prev) => [...prev, ...images]);
+    const all = Array.from(fileList);
+    const images = all.filter((file) => file.type.startsWith("image/"));
+    const rejected = all.filter((file) => !file.type.startsWith("image/"));
+    setSkipped(rejected.map((file) => file.name));
+    if (images.length > 0) setFiles((prev) => [...prev, ...images]);
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragging(false);
     addFiles(event.dataTransfer.files);
   };
 
-  const handleClear = () => {
+  const clearAll = () => {
     revokeResults(resultsRef.current);
-    setResults([]);
+    resultsRef.current = [];
+    setComputed(null);
     setFiles([]);
+    setSkipped([]);
   };
 
-  const handleRemove = (index: number) => {
+  const removeAt = (index: number) => {
     const next = files.filter((_, i) => i !== index);
     if (next.length === 0) {
-      revokeResults(resultsRef.current);
-      setResults([]);
+      clearAll();
+      return;
     }
     setFiles(next);
   };
 
+  const downloadZip = async () => {
+    if (!computed) return;
+    setZipping(true);
+    try {
+      await downloadAllZip(computed.results);
+    } finally {
+      setZipping(false);
+    }
+  };
+
+  const isCurrent =
+    computed !== null &&
+    computed.files === files &&
+    computed.format === format &&
+    computed.quality === quality &&
+    computed.maxWidth === maxWidth;
+  const processing = files.length > 0 && !isCurrent;
+  const results = computed && computed.files === files ? computed.results : [];
+  const firstPass = processing && results.length === 0;
+
   const totalOriginal = results.reduce((sum, r) => sum + r.originalSize, 0);
   const totalCompressed = results.reduce((sum, r) => sum + r.compressedSize, 0);
   const savedRatio =
-    totalOriginal > 0
-      ? Math.round(((totalOriginal - totalCompressed) / totalOriginal) * 100)
-      : 0;
+    totalOriginal > 0 ? Math.round(((totalOriginal - totalCompressed) / totalOriginal) * 100) : 0;
+  const formatLabel = FORMATS.find((item) => item.value === format)?.label ?? "";
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent-600/10 text-accent-400">
-            <HiOutlinePhoto className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-dark-100">
-              Image Compressor
-            </h2>
-            <p className="text-sm text-dark-400">
-              Compress and resize images with adjustable quality and format
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {results.length > 0 && (
+    <ToolPage
+      title="Image Compressor"
+      description="Shrink and resize images right in your browser. Nothing is uploaded."
+      actions={
+        files.length > 0 && (
+          <>
+            <Button label="Clear all" variant="ghost" icon={HiOutlineTrash} onClick={clearAll} />
             <Button
-              label="Download All"
+              label="Download all as ZIP"
               variant="primary"
-              size="sm"
-              onClick={() => downloadAllZip(results)}
               icon={HiOutlineArchiveBox}
+              onClick={downloadZip}
+              loading={zipping}
+              disabled={results.length === 0 || processing}
             />
-          )}
-          {files.length > 0 && (
-            <Button
-              label="Clear"
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              icon={HiOutlineTrash}
-            />
-          )}
-        </div>
-      </div>
-
-      <div className="flex gap-6 flex-1 min-h-0">
-        <div className="flex flex-col gap-4 w-80 shrink-0">
+          </>
+        )
+      }
+    >
+      <div className="grid gap-8 lg:grid-cols-[20rem_minmax(0,1fr)]">
+        <section aria-labelledby="settings-heading" className="flex flex-col gap-6">
+          <h2 id="settings-heading" className="sr-only">
+            Settings
+          </h2>
           <div
-            onClick={() => inputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
+            onDragOver={(event) => {
+              event.preventDefault();
               setDragging(true);
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
             className={clsx(
-              "flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200",
-              dragging
-                ? "border-accent-500 bg-accent-600/10"
-                : "border-dark-700 bg-dark-900 hover:border-dark-600"
+              "flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors duration-150",
+              dragging ? "border-primary bg-tint" : "border-line bg-surface"
             )}
           >
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent-600/10 text-accent-400">
-              <HiOutlineArrowUpTray className="w-6 h-6" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-dark-200">
-                Drop images here
-              </p>
-              <p className="text-xs text-dark-500 mt-1">or click to browse</p>
-            </div>
+            <HiOutlineArrowUpTray className="h-6 w-6 text-strong" aria-hidden="true" />
+            <p className="font-medium text-ink">
+              {dragging ? "Release to add images" : "Drop images here"}
+            </p>
+            <p className="text-sm text-muted">or pick them from your device</p>
+            <Button
+              label="Choose images"
+              variant="secondary"
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              className="mt-2"
+            />
             <input
               ref={inputRef}
               type="file"
               accept="image/*"
               multiple
-              className="hidden"
-              onChange={(e) => {
-                addFiles(e.target.files);
-                e.target.value = "";
+              tabIndex={-1}
+              aria-hidden="true"
+              className="sr-only"
+              onChange={(event) => {
+                addFiles(event.target.files);
+                event.target.value = "";
               }}
             />
           </div>
 
-          <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold mb-3 block">
-              Format
-            </span>
-            <div className="flex items-center p-1 rounded-lg bg-dark-800 border border-dark-700">
-              {FORMATS.map((item) => (
-                <button
-                  key={item.value}
-                  onClick={() => setFormat(item.value)}
-                  className={clsx(
-                    "flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                    format === item.value
-                      ? "bg-accent-600 text-white shadow-lg shadow-accent-600/20"
-                      : "text-dark-400 hover:text-dark-200"
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <SegmentedControl
+            label="Output format"
+            options={FORMATS}
+            value={format}
+            onChange={setFormat}
+            fullWidth
+          />
+          <Slider
+            label="Quality"
+            value={qualityInput}
+            min={10}
+            max={100}
+            step={5}
+            onChange={setQualityInput}
+            valueText={`${qualityInput}%`}
+            disabled={format === "image/png"}
+            hint={
+              format === "image/png"
+                ? "PNG is lossless, so quality does not apply."
+                : "Lower quality gives smaller files. 70 to 80 is a good balance."
+            }
+          />
+          <SegmentedControl
+            label="Max width in pixels"
+            options={WIDTH_PRESETS}
+            value={maxWidth}
+            onChange={setMaxWidth}
+            fullWidth
+          />
+        </section>
 
-          <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold">
-                Quality
-              </span>
-              <span className="text-sm font-mono text-dark-200">
-                {Math.round(quality * 100)}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min={10}
-              max={100}
-              step={5}
-              value={Math.round(quality * 100)}
-              onChange={(e) => setQuality(Number(e.target.value) / 100)}
-              disabled={format === "image/png"}
-              className="w-full accent-accent-500 disabled:opacity-40"
-            />
-            {format === "image/png" && (
-              <p className="text-xs text-dark-500 mt-2">
-                PNG is lossless, quality has no effect
-              </p>
-            )}
-          </div>
+        <section aria-labelledby="results-heading" className="flex min-w-0 flex-col gap-4">
+          <h2 id="results-heading" className="sr-only">
+            Results
+          </h2>
 
-          <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-            <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold mb-3 block">
-              Max Width
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              {WIDTH_PRESETS.map((item) => (
-                <button
-                  key={item.value}
-                  onClick={() => setMaxWidth(item.value)}
-                  className={clsx(
-                    "px-2 py-2 rounded-lg text-xs font-medium border transition-all duration-200",
-                    maxWidth === item.value
-                      ? "bg-accent-600 text-white border-accent-500"
-                      : "bg-dark-800 text-dark-400 border-dark-700 hover:text-dark-200"
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {results.length > 0 && (
-            <div className="p-4 rounded-xl bg-dark-900 border border-dark-700">
-              <span className="text-xs text-dark-500 uppercase tracking-wider font-semibold mb-3 block">
-                Summary
-              </span>
-              <div className="flex flex-col gap-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-dark-400">Original</span>
-                  <span className="font-mono text-dark-200">
-                    {formatBytes(totalOriginal)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-dark-400">Compressed</span>
-                  <span className="font-mono text-dark-200">
-                    {formatBytes(totalCompressed)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-dark-700">
-                  <span className="text-dark-400">Saved</span>
-                  <span
-                    className={clsx(
-                      "font-mono font-semibold",
-                      savedRatio >= 0 ? "text-success-400" : "text-error-500"
-                    )}
-                  >
-                    {savedRatio}%
-                  </span>
-                </div>
-              </div>
-            </div>
+          {skipped.length > 0 && (
+            <Notice
+              tone="error"
+              action={<Button label="Dismiss" variant="ghost" size="sm" onClick={() => setSkipped([])} />}
+            >
+              Skipped {skipped.length === 1 ? "a file that is" : `${skipped.length} files that are`} not
+              an image your browser can open: {skipped.join(", ")}
+            </Notice>
           )}
-        </div>
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 overflow-auto rounded-xl border border-dark-700 bg-dark-900 p-4">
-            {results.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="text-dark-500 text-sm">
-                  Upload images to start compressing
-                </span>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {results.map((result, index) => {
-                  const ratio =
-                    result.originalSize > 0
-                      ? Math.round(
-                          ((result.originalSize - result.compressedSize) /
-                            result.originalSize) *
-                            100
-                        )
-                      : 0;
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-dark-800 border border-dark-700"
-                    >
-                      <img
-                        src={result.compressedUrl}
-                        alt={result.name}
-                        className="w-16 h-16 rounded-lg object-cover border border-dark-700 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-dark-100 truncate">
-                          {result.name}
-                        </p>
-                        <p className="text-xs text-dark-500 mt-0.5">
-                          {result.width} × {result.height}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 text-xs font-mono">
-                          <span className="text-dark-500">
-                            {formatBytes(result.originalSize)}
-                          </span>
-                          <span className="text-dark-600">→</span>
-                          <span className="text-dark-200">
-                            {formatBytes(result.compressedSize)}
-                          </span>
-                          <span
-                            className={clsx(
-                              "px-2 py-0.5 rounded-md",
-                              ratio >= 0
-                                ? "bg-success-400/10 text-success-400"
-                                : "bg-error-500/10 text-error-500"
-                            )}
-                          >
-                            {ratio >= 0 ? "-" : "+"}
-                            {Math.abs(ratio)}%
-                          </span>
+          {files.length === 0 ? (
+            <div className="flex min-h-72 flex-col items-start justify-center gap-2 rounded-lg border border-rule bg-surface px-8 py-10">
+              <p className="font-medium text-ink">No images yet</p>
+              <p className="max-w-md text-muted">
+                Add images on the left. They are compressed with the current settings and you can
+                change the settings at any time.
+              </p>
+            </div>
+          ) : (
+            <>
+              <SummaryStrip
+                label="Compression summary"
+                items={[
+                  {
+                    label: savedRatio >= 0 ? "Saved" : "Grew by",
+                    value: firstPass ? "..." : `${Math.abs(savedRatio)}%`,
+                    context: firstPass
+                      ? "Compressing"
+                      : processing
+                        ? "Updating with new settings"
+                        : `${formatBytes(totalOriginal)} down to ${formatBytes(totalCompressed)}`,
+                    lead: true,
+                  },
+                  { label: "Images", value: files.length },
+                  {
+                    label: "Output",
+                    value: formatLabel,
+                    context: maxWidth ? `Max ${maxWidth}px wide` : "Original size",
+                  },
+                ]}
+              />
+              {!processing && savedRatio < 0 && (
+                <Notice tone="info">
+                  The output is larger than the originals. Try WebP or a lower quality.
+                </Notice>
+              )}
+
+              <ul
+                className={clsx(
+                  "flex flex-col rounded-lg border border-rule bg-raised transition-opacity duration-150",
+                  processing && !firstPass && "opacity-60"
+                )}
+                aria-busy={processing}
+              >
+                {firstPass
+                  ? files.map((file, index) => (
+                      <li
+                        key={`${file.name}-${index}`}
+                        className="flex items-center gap-4 border-b border-rule px-4 py-3 last:border-b-0"
+                      >
+                        <div className="h-16 w-16 shrink-0 animate-pulse rounded-md bg-surface" />
+                        <div className="flex min-w-0 flex-1 flex-col gap-2">
+                          <p className="truncate text-sm font-medium text-ink">{file.name}</p>
+                          <div className="h-3 w-40 animate-pulse rounded bg-surface" />
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                          label="Download"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => downloadBlob(result.blob, result.name)}
-                          icon={HiOutlineDocumentArrowDown}
-                        />
-                        <button
-                          onClick={() => handleRemove(index)}
-                          className="p-2 rounded-lg text-dark-500 hover:text-error-500 hover:bg-dark-700 transition-all duration-200"
+                      </li>
+                    ))
+                  : results.map((result, index) => {
+                      const change = changeLabel(result.originalSize, result.compressedSize);
+                      return (
+                        <li
+                          key={result.compressedUrl}
+                          className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-rule px-4 py-3 last:border-b-0"
                         >
-                          <HiOutlineTrash className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+                          <img
+                            src={result.compressedUrl}
+                            alt=""
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            className="h-16 w-16 shrink-0 rounded-md border border-rule object-cover"
+                          />
+                          <div className="min-w-0 flex-1 basis-48">
+                            <p className="text-sm font-medium break-all text-ink">{result.name}</p>
+                            <p className="font-mono text-xs tabular-nums text-muted">
+                              {result.width} × {result.height}
+                            </p>
+                            <p className="mt-1 font-mono text-xs tabular-nums text-muted">
+                              {formatBytes(result.originalSize)} to{" "}
+                              <span className="text-ink">{formatBytes(result.compressedSize)}</span>
+                              <span
+                                className={clsx(
+                                  "ml-2 font-sans font-semibold",
+                                  change.smaller ? "text-success" : "text-danger"
+                                )}
+                              >
+                                {change.text}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              label="Download"
+                              ariaLabel={`Download ${result.name}`}
+                              variant="secondary"
+                              size="sm"
+                              icon={HiOutlineArrowDownTray}
+                              onClick={() => downloadBlob(result.blob, result.name)}
+                            />
+                            <Button
+                              label="Remove"
+                              ariaLabel={`Remove ${result.name}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAt(index)}
+                            />
+                          </div>
+                        </li>
+                      );
+                    })}
+              </ul>
+            </>
+          )}
+        </section>
       </div>
-    </div>
+    </ToolPage>
   );
 };

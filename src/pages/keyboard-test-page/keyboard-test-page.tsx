@@ -1,23 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { clsx } from "clsx";
-import {
-  HiOutlineComputerDesktop,
-  HiOutlineTrash,
-} from "react-icons/hi2";
+import { HiArrowPath, HiOutlineCheckCircle, HiOutlinePauseCircle } from "react-icons/hi2";
+import { ToolPage } from "../../components/layout/tool-page/tool-page";
 import { Button } from "../../components/common/button/button";
+import { SummaryStrip } from "../../components/common/summary-strip/summary-strip";
 
 interface IKeyEvent {
   key: string;
   code: string;
   keyCode: number;
-  which: number;
   altKey: boolean;
   ctrlKey: boolean;
   shiftKey: boolean;
   metaKey: boolean;
   location: number;
   repeat: boolean;
-  timestamp: number;
 }
 
 const KEYBOARD_ROWS: string[][] = [
@@ -29,30 +27,20 @@ const KEYBOARD_ROWS: string[][] = [
   ["ControlLeft", "MetaLeft", "AltLeft", "Space", "AltRight", "MetaRight", "ControlRight"],
 ];
 
+const ALL_KEYS = new Set(KEYBOARD_ROWS.flat());
+
 const KEY_LABELS: Record<string, string> = {
   Escape: "Esc",
   Backquote: "`",
-  Digit1: "1",
-  Digit2: "2",
-  Digit3: "3",
-  Digit4: "4",
-  Digit5: "5",
-  Digit6: "6",
-  Digit7: "7",
-  Digit8: "8",
-  Digit9: "9",
-  Digit0: "0",
   Minus: "-",
   Equal: "=",
   Backspace: "Backspace",
-  Tab: "Tab",
   BracketLeft: "[",
   BracketRight: "]",
   Backslash: "\\",
   CapsLock: "Caps",
   Semicolon: ";",
   Quote: "'",
-  Enter: "Enter",
   ShiftLeft: "Shift",
   ShiftRight: "Shift",
   ControlLeft: "Ctrl",
@@ -61,251 +49,208 @@ const KEY_LABELS: Record<string, string> = {
   MetaRight: "Win",
   AltLeft: "Alt",
   AltRight: "Alt",
-  Space: "Space",
   Comma: ",",
   Period: ".",
   Slash: "/",
-  KeyQ: "Q",
-  KeyW: "W",
-  KeyE: "E",
-  KeyR: "R",
-  KeyT: "T",
-  KeyY: "Y",
-  KeyU: "U",
-  KeyI: "I",
-  KeyO: "O",
-  KeyP: "P",
-  KeyA: "A",
-  KeyS: "S",
-  KeyD: "D",
-  KeyF: "F",
-  KeyG: "G",
-  KeyH: "H",
-  KeyJ: "J",
-  KeyK: "K",
-  KeyL: "L",
-  KeyZ: "Z",
-  KeyX: "X",
-  KeyC: "C",
-  KeyV: "V",
-  KeyB: "B",
-  KeyN: "N",
-  KeyM: "M",
-  F1: "F1",
-  F2: "F2",
-  F3: "F3",
-  F4: "F4",
-  F5: "F5",
-  F6: "F6",
-  F7: "F7",
-  F8: "F8",
-  F9: "F9",
-  F10: "F10",
-  F11: "F11",
-  F12: "F12",
 };
 
-const WIDE_KEYS = new Set([
-  "Backspace",
-  "Tab",
-  "CapsLock",
-  "Enter",
-  "ShiftLeft",
-  "ShiftRight",
-  "ControlLeft",
-  "ControlRight",
-]);
+const keyLabel = (code: string) =>
+  KEY_LABELS[code] ?? code.replace(/^Key/, "").replace(/^Digit/, "");
 
-const EXTRA_WIDE_KEYS = new Set(["Space"]);
-
-const getLocationLabel = (location: number): string => {
-  switch (location) {
-    case 0:
-      return "Standard";
-    case 1:
-      return "Left";
-    case 2:
-      return "Right";
-    case 3:
-      return "Numpad";
-    default:
-      return "Unknown";
-  }
+const KEY_WIDTHS: Record<string, string> = {
+  Backspace: "flex-[2]",
+  Tab: "flex-[1.5]",
+  Backslash: "flex-[1.5]",
+  CapsLock: "flex-[1.75]",
+  Enter: "flex-[2.25]",
+  ShiftLeft: "flex-[2.25]",
+  ShiftRight: "flex-[2.75]",
+  ControlLeft: "flex-[1.25]",
+  ControlRight: "flex-[1.25]",
+  MetaLeft: "flex-[1.25]",
+  MetaRight: "flex-[1.25]",
+  AltLeft: "flex-[1.25]",
+  AltRight: "flex-[1.25]",
+  Space: "flex-[6.25]",
 };
+
+const LOCATIONS = ["Standard", "Left", "Right", "Numpad"];
 
 export const KeyboardTestPage = () => {
+  const areaRef = useRef<HTMLDivElement>(null);
   const [lastEvent, setLastEvent] = useState<IKeyEvent | null>(null);
   const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
-  const [pressedHistory, setPressedHistory] = useState<Set<string>>(new Set());
-  const [keyCount, setKeyCount] = useState(0);
+  const [tested, setTested] = useState<Set<string>>(new Set());
+  const [presses, setPresses] = useState(0);
+  const [listening, setListening] = useState(false);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    e.preventDefault();
-    const keyEvent: IKeyEvent = {
-      key: e.key,
-      code: e.code,
-      keyCode: e.keyCode,
-      which: e.which,
-      altKey: e.altKey,
-      ctrlKey: e.ctrlKey,
-      shiftKey: e.shiftKey,
-      metaKey: e.metaKey,
-      location: e.location,
-      repeat: e.repeat,
-      timestamp: Date.now(),
-    };
-    setLastEvent(keyEvent);
-    setActiveKeys((prev) => new Set(prev).add(e.code));
-    setPressedHistory((prev) => new Set(prev).add(e.code));
-    if (!e.repeat) {
-      setKeyCount((prev) => prev + 1);
-    }
-  }, []);
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    e.preventDefault();
-    setActiveKeys((prev) => {
-      const next = new Set(prev);
-      next.delete(e.code);
-      return next;
-    });
-  }, []);
+  const record = useCallback(
+    (event: globalThis.KeyboardEvent | KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Tab") event.preventDefault();
+      setLastEvent({
+        key: event.key,
+        code: event.code,
+        keyCode: event.keyCode,
+        altKey: event.altKey,
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+        metaKey: event.metaKey,
+        location: event.location,
+        repeat: event.repeat,
+      });
+      setActiveKeys((prev) => new Set(prev).add(event.code));
+      setTested((prev) => (prev.has(event.code) ? prev : new Set(prev).add(event.code)));
+      if (!event.repeat) setPresses((prev) => prev + 1);
+    },
+    []
+  );
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    areaRef.current?.focus();
+    const handleIdleKeyDown = (event: globalThis.KeyboardEvent) => {
+      const active = document.activeElement;
+      const idle =
+        !active || active === document.body || active.id === "page-title" || active.id === "main";
+      if (!idle || event.key === "Tab" || event.target !== active) return;
+      areaRef.current?.focus();
+      record(event);
+    };
+    const handleKeyUp = (event: globalThis.KeyboardEvent) => {
+      setActiveKeys((prev) => {
+        if (!prev.has(event.code)) return prev;
+        const next = new Set(prev);
+        next.delete(event.code);
+        return next;
+      });
+    };
+    window.addEventListener("keydown", handleIdleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleIdleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [handleKeyDown, handleKeyUp]);
+  }, [record]);
 
-  const handleClear = () => {
+  const reset = () => {
     setLastEvent(null);
     setActiveKeys(new Set());
-    setPressedHistory(new Set());
-    setKeyCount(0);
+    setTested(new Set());
+    setPresses(0);
+    areaRef.current?.focus();
   };
 
+  const testedOnBoard = [...tested].filter((code) => ALL_KEYS.has(code)).length;
+  const modifiers = lastEvent
+    ? [
+        lastEvent.ctrlKey && "Ctrl",
+        lastEvent.shiftKey && "Shift",
+        lastEvent.altKey && "Alt",
+        lastEvent.metaKey && "Meta",
+      ].filter(Boolean)
+    : [];
+
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent-600/10 text-accent-400">
-            <HiOutlineComputerDesktop className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-dark-100">
-              Keyboard Test
-            </h2>
-            <p className="text-sm text-dark-400">
-              Press any key to test your keyboard
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-800 border border-dark-700">
-            <span className="text-sm text-dark-400">Keys pressed:</span>
-            <span className="text-sm font-semibold text-accent-400">
-              {keyCount}
-            </span>
-          </div>
-          <Button
-            label="Reset"
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            icon={HiOutlineTrash}
-          />
-        </div>
+    <ToolPage
+      title="Keyboard Test"
+      description="Press keys to see which ones register. Keys light up while held and stay marked once tested."
+      actions={
+        <Button label="Reset test" variant="secondary" icon={HiArrowPath} onClick={reset} />
+      }
+    >
+      <SummaryStrip
+        label="Keyboard test results"
+        items={[
+          {
+            label: "Keys tested",
+            value: `${testedOnBoard} of ${ALL_KEYS.size}`,
+            context: `${presses.toLocaleString()} presses in total`,
+            lead: true,
+          },
+          {
+            label: "Last key",
+            value: lastEvent ? (lastEvent.key === " " ? "Space" : lastEvent.key) : "None yet",
+            context: modifiers.length > 0 ? `With ${modifiers.join(" and ")}` : "No modifiers",
+          },
+          { label: "Code", value: lastEvent?.code || "None yet" },
+          { label: "Key code", value: lastEvent ? String(lastEvent.keyCode) : "None yet" },
+          {
+            label: "Location",
+            value: lastEvent ? LOCATIONS[lastEvent.location] ?? "Unknown" : "None yet",
+            context: lastEvent?.repeat ? "Held down and repeating" : undefined,
+          },
+        ]}
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-sm" aria-live="polite">
+          {listening ? (
+            <>
+              <HiOutlineCheckCircle className="h-5 w-5 text-success" aria-hidden="true" />
+              <span className="font-medium text-success">Listening.</span>
+              <span className="text-muted">Tab moves focus out of the test area.</span>
+            </>
+          ) : (
+            <>
+              <HiOutlinePauseCircle className="h-5 w-5 text-warning" aria-hidden="true" />
+              <span className="font-medium text-warning">Paused.</span>
+              <span className="text-muted">Press any key or click the keyboard below to keep testing.</span>
+            </>
+          )}
+        </p>
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted" aria-label="Legend">
+          <li className="flex items-center gap-2">
+            <span className="h-4 w-5 rounded-sm bg-primary" aria-hidden="true" />
+            Held now
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="h-4 w-5 rounded-sm border border-line bg-tint shadow-[inset_0_-3px_0_var(--color-primary)]" aria-hidden="true" />
+            Tested
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="h-4 w-5 rounded-sm border border-rule bg-raised" aria-hidden="true" />
+            Not tested
+          </li>
+        </ul>
       </div>
 
-      {lastEvent && (
-        <div className="mb-6 p-4 rounded-xl bg-dark-900 border border-dark-700">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <span className="text-xs text-dark-500 uppercase tracking-wider">Key</span>
-              <p className="text-lg font-semibold text-dark-100 mt-1">
-                {lastEvent.key === " " ? "Space" : lastEvent.key}
-              </p>
-            </div>
-            <div>
-              <span className="text-xs text-dark-500 uppercase tracking-wider">Code</span>
-              <p className="text-lg font-semibold text-dark-100 mt-1">{lastEvent.code}</p>
-            </div>
-            <div>
-              <span className="text-xs text-dark-500 uppercase tracking-wider">Key Code</span>
-              <p className="text-lg font-semibold text-dark-100 mt-1">{lastEvent.keyCode}</p>
-            </div>
-            <div>
-              <span className="text-xs text-dark-500 uppercase tracking-wider">Location</span>
-              <p className="text-lg font-semibold text-dark-100 mt-1">
-                {getLocationLabel(lastEvent.location)}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3 mt-4">
-            {lastEvent.ctrlKey && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-accent-600/10 text-accent-400">
-                Ctrl
-              </span>
-            )}
-            {lastEvent.shiftKey && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-accent-600/10 text-accent-400">
-                Shift
-              </span>
-            )}
-            {lastEvent.altKey && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-accent-600/10 text-accent-400">
-                Alt
-              </span>
-            )}
-            {lastEvent.metaKey && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-accent-600/10 text-accent-400">
-                Meta
-              </span>
-            )}
-            {lastEvent.repeat && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning-500/10 text-warning-400">
-                Repeat
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {!lastEvent && (
-        <div className="mb-6 p-4 rounded-xl bg-dark-900 border border-dark-700 flex items-center justify-center">
-          <p className="text-dark-500 text-sm">Press any key to see details here</p>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="flex flex-col gap-1.5 w-full max-w-4xl">
+      <div className="overflow-x-auto pb-2">
+        <div
+          ref={areaRef}
+          tabIndex={0}
+          role="application"
+          aria-label="Keyboard test area. Press any key to test it."
+          aria-roledescription="keyboard tester"
+          onKeyDown={record}
+          onFocus={() => setListening(true)}
+          onBlur={() => {
+            setListening(false);
+            setActiveKeys(new Set());
+          }}
+          onClick={() => areaRef.current?.focus()}
+          className={clsx(
+            "mx-auto flex min-w-[46rem] max-w-5xl flex-col gap-1.5 rounded-xl border bg-surface p-3 transition-colors duration-150",
+            listening ? "border-line" : "border-rule"
+          )}
+        >
           {KEYBOARD_ROWS.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex gap-1.5 justify-center">
+            <div key={rowIndex} className={clsx("flex gap-1.5", rowIndex === 0 && "mb-2")}>
               {row.map((code) => {
                 const isActive = activeKeys.has(code);
-                const wasPressed = pressedHistory.has(code);
-                const label = KEY_LABELS[code] || code;
-                const isWide = WIDE_KEYS.has(code);
-                const isExtraWide = EXTRA_WIDE_KEYS.has(code);
-
+                const wasTested = tested.has(code);
                 return (
                   <div
                     key={code}
                     className={clsx(
-                      "flex items-center justify-center rounded-lg border text-xs font-medium transition-all duration-100 select-none",
-                      "h-10",
-                      isExtraWide ? "flex-1 min-w-[200px]" : isWide ? "w-16 md:w-20" : "w-10 md:w-12",
+                      "flex h-11 min-w-0 flex-1 select-none items-center justify-center rounded-md border font-mono text-xs transition-[background-color,color,transform] duration-100",
+                      KEY_WIDTHS[code],
                       isActive
-                        ? "bg-accent-600 border-accent-500 text-white scale-95 shadow-lg shadow-accent-600/30"
-                        : wasPressed
-                          ? "bg-success-500/10 border-success-500/30 text-success-400"
-                          : "bg-dark-800 border-dark-700 text-dark-400 hover:border-dark-600"
+                        ? "translate-y-px border-primary bg-primary font-semibold text-on-primary"
+                        : wasTested
+                          ? "border-line bg-tint font-semibold text-strong shadow-[inset_0_-3px_0_var(--color-primary)]"
+                          : "border-rule bg-raised text-muted"
                     )}
                   >
-                    {label}
+                    {keyLabel(code)}
                   </div>
                 );
               })}
@@ -313,6 +258,6 @@ export const KeyboardTestPage = () => {
           ))}
         </div>
       </div>
-    </div>
+    </ToolPage>
   );
 };
