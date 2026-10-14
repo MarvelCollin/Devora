@@ -26,6 +26,7 @@ A collection of fast, free, in-browser developer tools. No sign-up, no uploads t
 | Keyboard Test | Check that every key on your keyboard registers |
 | Mouse Test | Test mouse buttons, clicks, and scroll |
 | WiFi Speed Test | Measure your current connection speed |
+| Word Counter | Count words, characters, sentences, and reading time |
 
 ## Tech Stack
 

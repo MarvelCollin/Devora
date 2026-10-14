@@ -12,6 +12,7 @@ import {
   HiOutlineSwatch,
   HiOutlineQrCode,
   HiOutlinePhoto,
+  HiOutlineDocumentText,
 } from "react-icons/hi2";
 import { Header } from "./components/layout/header/header";
 import { Sidebar } from "./components/layout/sidebar/sidebar";
@@ -28,6 +29,7 @@ import { ColorConverterPage } from "./pages/color-converter-page/color-converter
 import { WifiSpeedTestPage } from "./pages/wifi-speed-test-page/wifi-speed-test-page";
 import { QrGeneratorPage } from "./pages/qr-generator-page/qr-generator-page";
 import { ImageCompressorPage } from "./pages/image-compressor-page/image-compressor-page";
+import { WordCounterPage } from "./pages/word-counter-page/word-counter-page";
 import type { ITool } from "./interfaces/ITool";
 
 const tools: ITool[] = [
@@ -115,6 +117,13 @@ const tools: ITool[] = [
     icon: HiOutlinePhoto,
     path: "/image-compressor",
   },
+  {
+    id: "word-counter",
+    name: "Word Counter",
+    description: "Count words, characters, sentences, and estimate reading time",
+    icon: HiOutlineDocumentText,
+    path: "/word-counter",
+  },
 ];
 
 export const App = () => {
@@ -160,6 +169,8 @@ export const App = () => {
         return <QrGeneratorPage />;
       case "image-compressor":
         return <ImageCompressorPage />;
+      case "word-counter":
+        return <WordCounterPage />;
       default:
         return <HomePage tools={tools} onToolSelect={handleToolSelect} />;
     }
