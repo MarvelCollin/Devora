@@ -34,6 +34,7 @@ import {
   HiOutlineGlobeAlt,
   HiOutlineMicrophone,
   HiOutlineSpeakerWave,
+  HiOutlineHandRaised,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -328,5 +329,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineSpeakerWave,
     group: "Screen and sound",
     keywords: ["speaker", "headphones", "audio", "left right", "stereo", "tone", "frequency", "sound test"],
+  },
+  {
+    id: "touchscreen-test",
+    name: "Touchscreen Test",
+    description: "Find dead zones and check multi-touch on a touch screen",
+    icon: HiOutlineHandRaised,
+    group: "Input devices",
+    keywords: ["touch", "touchscreen", "multi-touch", "dead zone", "tablet", "phone", "pen"],
   },
 ];

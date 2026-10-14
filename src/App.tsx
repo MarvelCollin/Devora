@@ -188,6 +188,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.SpeakerTestPage,
     }))
   ),
+  "touchscreen-test": lazy(() =>
+    import("./pages/touchscreen-test-page/touchscreen-test-page").then((m) => ({
+      default: m.TouchscreenTestPage,
+    }))
+  ),
 };
 
 const ROUTE_ALIASES: Record<string, string> = {
