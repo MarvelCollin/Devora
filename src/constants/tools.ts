@@ -32,6 +32,7 @@ import {
   HiOutlineVideoCamera,
   HiOutlinePuzzlePiece,
   HiOutlineGlobeAlt,
+  HiOutlineMicrophone,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -41,7 +42,9 @@ export const TOOL_GROUPS: ToolGroup[] = [
   "Text and generators",
   "Time and color",
   "Images",
-  "Devices and network",
+  "Input devices",
+  "Screen and sound",
+  "Network and system",
 ];
 
 export const TOOLS: ITool[] = [
@@ -258,7 +261,7 @@ export const TOOLS: ITool[] = [
     name: "Keyboard Test",
     description: "Check that every key on your keyboard registers",
     icon: HiOutlineComputerDesktop,
-    group: "Devices and network",
+    group: "Input devices",
     keywords: ["keyboard", "keys", "keycode", "test"],
   },
   {
@@ -266,7 +269,7 @@ export const TOOLS: ITool[] = [
     name: "Mouse Test",
     description: "Test mouse buttons, scrolling and movement",
     icon: HiOutlineCursorArrowRays,
-    group: "Devices and network",
+    group: "Input devices",
     keywords: ["mouse", "click", "scroll", "cursor", "test"],
   },
   {
@@ -274,7 +277,7 @@ export const TOOLS: ITool[] = [
     name: "Gamepad Tester",
     description: "Test controller buttons, sticks, triggers and vibration",
     icon: HiOutlinePuzzlePiece,
-    group: "Devices and network",
+    group: "Input devices",
     keywords: ["gamepad", "controller", "joystick", "xbox", "playstation", "drift", "stick"],
   },
   {
@@ -282,23 +285,31 @@ export const TOOLS: ITool[] = [
     name: "Screen Test",
     description: "Check resolution and refresh rate, and find dead pixels",
     icon: HiOutlineTv,
-    group: "Devices and network",
+    group: "Screen and sound",
     keywords: ["screen", "monitor", "display", "dead pixel", "refresh rate", "hz", "resolution"],
   },
   {
-    id: "webcam-mic-test",
-    name: "Webcam and Mic Test",
-    description: "Check your camera and microphone before a call",
+    id: "camera-test",
+    name: "Camera Test",
+    description: "Check your webcam: live preview, frame rate, lighting and resolution",
     icon: HiOutlineVideoCamera,
-    group: "Devices and network",
-    keywords: ["webcam", "camera", "microphone", "mic", "audio", "video", "test", "meeting"],
+    group: "Screen and sound",
+    keywords: ["webcam", "camera", "video", "fps", "resolution", "test", "meeting"],
+  },
+  {
+    id: "mic-test",
+    name: "Mic Test",
+    description: "Check your microphone level, background noise and sound quality",
+    icon: HiOutlineMicrophone,
+    group: "Screen and sound",
+    keywords: ["microphone", "mic", "audio", "sound", "noise", "test", "recording"],
   },
   {
     id: "wifi-speed-test",
     name: "WiFi Speed Test",
     description: "Measure ping, download and upload speed",
     icon: HiOutlineSignal,
-    group: "Devices and network",
+    group: "Network and system",
     keywords: ["wifi", "internet", "speed", "ping", "bandwidth"],
   },
   {
@@ -306,7 +317,7 @@ export const TOOLS: ITool[] = [
     name: "My IP and Connection",
     description: "See your public IP, location and connection details",
     icon: HiOutlineGlobeAlt,
-    group: "Devices and network",
+    group: "Network and system",
     keywords: ["ip", "ip address", "ipv4", "ipv6", "location", "network", "what is my ip"],
   },
 ];

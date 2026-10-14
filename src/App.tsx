@@ -163,9 +163,14 @@ const PAGES: Record<string, ComponentType> = {
       default: m.ScreenTestPage,
     }))
   ),
-  "webcam-mic-test": lazy(() =>
-    import("./pages/webcam-mic-test-page/webcam-mic-test-page").then((m) => ({
-      default: m.WebcamMicTestPage,
+  "camera-test": lazy(() =>
+    import("./pages/camera-test-page/camera-test-page").then((m) => ({
+      default: m.CameraTestPage,
+    }))
+  ),
+  "mic-test": lazy(() =>
+    import("./pages/mic-test-page/mic-test-page").then((m) => ({
+      default: m.MicTestPage,
     }))
   ),
   "gamepad-tester": lazy(() =>
@@ -178,6 +183,10 @@ const PAGES: Record<string, ComponentType> = {
       default: m.MyIpPage,
     }))
   ),
+};
+
+const ROUTE_ALIASES: Record<string, string> = {
+  "webcam-mic-test": "camera-test",
 };
 
 const NotFoundPage = () => (
@@ -200,6 +209,10 @@ export const App = () => {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (route && ROUTE_ALIASES[route]) window.location.replace(routeHref(ROUTE_ALIASES[route]));
+  }, [route]);
 
   const activeTool = TOOLS.find((tool) => tool.id === route) ?? null;
   const Page = route ? PAGES[route] : null;

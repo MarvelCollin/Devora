@@ -6,7 +6,9 @@ export type ToolGroup =
   | "Text and generators"
   | "Time and color"
   | "Images"
-  | "Devices and network";
+  | "Input devices"
+  | "Screen and sound"
+  | "Network and system";
 
 export interface ITool {
   id: string;
