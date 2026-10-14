@@ -163,6 +163,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.ScreenTestPage,
     }))
   ),
+  "webcam-mic-test": lazy(() =>
+    import("./pages/webcam-mic-test-page/webcam-mic-test-page").then((m) => ({
+      default: m.WebcamMicTestPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

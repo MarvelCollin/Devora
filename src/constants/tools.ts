@@ -29,6 +29,7 @@ import {
   HiOutlineSquare2Stack,
   HiOutlineEyeDropper,
   HiOutlineTv,
+  HiOutlineVideoCamera,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -281,5 +282,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineTv,
     group: "Devices and network",
     keywords: ["screen", "monitor", "display", "dead pixel", "refresh rate", "hz", "resolution"],
+  },
+  {
+    id: "webcam-mic-test",
+    name: "Webcam and Mic Test",
+    description: "Check your camera and microphone before a call",
+    icon: HiOutlineVideoCamera,
+    group: "Devices and network",
+    keywords: ["webcam", "camera", "microphone", "mic", "audio", "video", "test", "meeting"],
   },
 ];
