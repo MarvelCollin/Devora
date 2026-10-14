@@ -148,6 +148,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.ImageBase64Page,
     }))
   ),
+  "favicon-generator": lazy(() =>
+    import("./pages/favicon-generator-page/favicon-generator-page").then((m) => ({
+      default: m.FaviconGeneratorPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

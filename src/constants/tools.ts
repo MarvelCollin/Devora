@@ -26,6 +26,7 @@ import {
   HiOutlineCalendarDays,
   HiOutlineSparkles,
   HiOutlineCodeBracketSquare,
+  HiOutlineSquare2Stack,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -254,5 +255,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineCodeBracketSquare,
     group: "Images",
     keywords: ["base64", "data url", "data uri", "image", "inline", "embed"],
+  },
+  {
+    id: "favicon-generator",
+    name: "Favicon Generator",
+    description: "Create favicon.ico and app icons from an image or letters",
+    icon: HiOutlineSquare2Stack,
+    group: "Images",
+    keywords: ["favicon", "ico", "icon", "apple touch", "manifest", "pwa", "logo"],
   },
 ];
