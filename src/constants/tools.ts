@@ -36,6 +36,7 @@ import {
   HiOutlineSpeakerWave,
   HiOutlineHandRaised,
   HiOutlineBattery50,
+  HiOutlineMapPin,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -346,5 +347,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineBattery50,
     group: "Network and system",
     keywords: ["battery", "charge", "charging", "power", "laptop", "phone"],
+  },
+  {
+    id: "location-check",
+    name: "Location Check",
+    description: "Check GPS and location permission, with coordinates and accuracy",
+    icon: HiOutlineMapPin,
+    group: "Network and system",
+    keywords: ["location", "gps", "geolocation", "coordinates", "latitude", "longitude", "map"],
   },
 ];

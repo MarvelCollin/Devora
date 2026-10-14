@@ -198,6 +198,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.BatteryStatusPage,
     }))
   ),
+  "location-check": lazy(() =>
+    import("./pages/location-check-page/location-check-page").then((m) => ({
+      default: m.LocationCheckPage,
+    }))
+  ),
 };
 
 const ROUTE_ALIASES: Record<string, string> = {
