@@ -31,6 +31,7 @@ import {
   HiOutlineTv,
   HiOutlineVideoCamera,
   HiOutlinePuzzlePiece,
+  HiOutlineGlobeAlt,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -299,5 +300,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlinePuzzlePiece,
     group: "Devices and network",
     keywords: ["gamepad", "controller", "joystick", "xbox", "playstation", "drift", "stick"],
+  },
+  {
+    id: "my-ip",
+    name: "My IP and Connection",
+    description: "See your public IP, location and connection details",
+    icon: HiOutlineGlobeAlt,
+    group: "Devices and network",
+    keywords: ["ip", "ip address", "ipv4", "ipv6", "location", "network", "what is my ip"],
   },
 ];

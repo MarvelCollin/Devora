@@ -173,6 +173,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.GamepadTesterPage,
     }))
   ),
+  "my-ip": lazy(() =>
+    import("./pages/my-ip-page/my-ip-page").then((m) => ({
+      default: m.MyIpPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (
