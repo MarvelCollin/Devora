@@ -123,6 +123,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.SqlFormatterPage,
     }))
   ),
+  "markdown-preview": lazy(() =>
+    import("./pages/markdown-preview-page/markdown-preview-page").then((m) => ({
+      default: m.MarkdownPreviewPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

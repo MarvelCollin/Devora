@@ -21,6 +21,7 @@ import {
   HiOutlineCalculator,
   HiOutlineTableCells,
   HiOutlineCircleStack,
+  HiOutlinePencilSquare,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -209,5 +210,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineCircleStack,
     group: "Format and convert",
     keywords: ["sql", "query", "format", "postgres", "mysql", "database", "beautify"],
+  },
+  {
+    id: "markdown-preview",
+    name: "Markdown Preview",
+    description: "Write Markdown and see it rendered live, then copy the HTML",
+    icon: HiOutlinePencilSquare,
+    group: "Format and convert",
+    keywords: ["markdown", "md", "readme", "preview", "html", "gfm"],
   },
 ];
