@@ -88,6 +88,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.RegexTesterPage,
     }))
   ),
+  "text-diff": lazy(() =>
+    import("./pages/text-diff-page/text-diff-page").then((m) => ({
+      default: m.TextDiffPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

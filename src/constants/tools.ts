@@ -14,6 +14,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineShieldCheck,
   HiOutlineVariable,
+  HiOutlineDocumentMagnifyingGlass,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -146,5 +147,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineVariable,
     group: "Text and generators",
     keywords: ["regex", "regexp", "regular expression", "match", "replace", "pattern"],
+  },
+  {
+    id: "text-diff",
+    name: "Text Diff",
+    description: "Compare two texts and see added and removed lines or words",
+    icon: HiOutlineDocumentMagnifyingGlass,
+    group: "Text and generators",
+    keywords: ["diff", "compare", "difference", "changes", "patch"],
   },
 ];
