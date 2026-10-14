@@ -183,6 +183,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.MyIpPage,
     }))
   ),
+  "speaker-test": lazy(() =>
+    import("./pages/speaker-test-page/speaker-test-page").then((m) => ({
+      default: m.SpeakerTestPage,
+    }))
+  ),
 };
 
 const ROUTE_ALIASES: Record<string, string> = {

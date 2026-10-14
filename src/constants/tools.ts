@@ -33,6 +33,7 @@ import {
   HiOutlinePuzzlePiece,
   HiOutlineGlobeAlt,
   HiOutlineMicrophone,
+  HiOutlineSpeakerWave,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -319,5 +320,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineGlobeAlt,
     group: "Network and system",
     keywords: ["ip", "ip address", "ipv4", "ipv6", "location", "network", "what is my ip"],
+  },
+  {
+    id: "speaker-test",
+    name: "Speaker Test",
+    description: "Check left and right channels, tones and the frequency range of speakers or headphones",
+    icon: HiOutlineSpeakerWave,
+    group: "Screen and sound",
+    keywords: ["speaker", "headphones", "audio", "left right", "stereo", "tone", "frequency", "sound test"],
   },
 ];
