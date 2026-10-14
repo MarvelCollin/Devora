@@ -158,6 +158,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.ImageColorPickerPage,
     }))
   ),
+  "screen-test": lazy(() =>
+    import("./pages/screen-test-page/screen-test-page").then((m) => ({
+      default: m.ScreenTestPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

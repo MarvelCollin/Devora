@@ -28,6 +28,7 @@ import {
   HiOutlineCodeBracketSquare,
   HiOutlineSquare2Stack,
   HiOutlineEyeDropper,
+  HiOutlineTv,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -272,5 +273,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineEyeDropper,
     group: "Images",
     keywords: ["color picker", "eyedropper", "palette", "dominant", "image", "hex"],
+  },
+  {
+    id: "screen-test",
+    name: "Screen Test",
+    description: "Check resolution and refresh rate, and find dead pixels",
+    icon: HiOutlineTv,
+    group: "Devices and network",
+    keywords: ["screen", "monitor", "display", "dead pixel", "refresh rate", "hz", "resolution"],
   },
 ];
