@@ -138,6 +138,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.CronExplainerPage,
     }))
   ),
+  "css-builder": lazy(() =>
+    import("./pages/css-builder-page/css-builder-page").then((m) => ({
+      default: m.CssBuilderPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

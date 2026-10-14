@@ -24,6 +24,7 @@ import {
   HiOutlinePencilSquare,
   HiOutlineGlobeAsiaAustralia,
   HiOutlineCalendarDays,
+  HiOutlineSparkles,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -236,5 +237,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlineCalendarDays,
     group: "Time and color",
     keywords: ["cron", "crontab", "schedule", "job", "next run", "quartz"],
+  },
+  {
+    id: "css-builder",
+    name: "Gradients and Shadows",
+    description: "Design CSS gradients and box shadows, copy CSS or Tailwind",
+    icon: HiOutlineSparkles,
+    group: "Time and color",
+    keywords: ["gradient", "shadow", "box-shadow", "css", "tailwind", "background", "linear"],
   },
 ];

@@ -27,7 +27,7 @@ export const CodeBlock = ({ label, code, hint, copy = true }: ICodeBlockProps) =
         tabIndex={0}
         role="region"
         aria-labelledby={labelId}
-        className="max-h-96 overflow-auto rounded-lg border border-rule bg-surface px-4 py-3 font-mono text-sm leading-relaxed text-ink"
+        className="max-h-96 overflow-auto rounded-lg border border-rule bg-surface px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap text-ink [overflow-wrap:anywhere]"
       >
         {code}
       </pre>
