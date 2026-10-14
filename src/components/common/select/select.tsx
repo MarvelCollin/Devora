@@ -120,7 +120,7 @@ export const Select = <T extends string>({
 
   return (
     <div className={clsx("flex min-w-0 flex-col gap-2", className)}>
-      <span id={labelId} className="text-sm font-medium text-ink">
+      <span id={labelId} className="flex min-h-8 items-center text-sm font-medium text-ink">
         {label}
       </span>
       <div ref={rootRef} className="relative">

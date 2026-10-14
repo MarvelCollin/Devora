@@ -22,6 +22,7 @@ import {
   HiOutlineTableCells,
   HiOutlineCircleStack,
   HiOutlinePencilSquare,
+  HiOutlineGlobeAsiaAustralia,
 } from "react-icons/hi2";
 import type { ITool, ToolGroup } from "../interfaces/ITool";
 
@@ -218,5 +219,13 @@ export const TOOLS: ITool[] = [
     icon: HiOutlinePencilSquare,
     group: "Format and convert",
     keywords: ["markdown", "md", "readme", "preview", "html", "gfm"],
+  },
+  {
+    id: "timezone-converter",
+    name: "Timezone Converter",
+    description: "See one moment in many time zones, with daylight saving handled",
+    icon: HiOutlineGlobeAsiaAustralia,
+    group: "Time and color",
+    keywords: ["timezone", "time zone", "utc", "gmt", "meeting", "world clock", "dst"],
   },
 ];

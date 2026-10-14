@@ -128,6 +128,11 @@ const PAGES: Record<string, ComponentType> = {
       default: m.MarkdownPreviewPage,
     }))
   ),
+  "timezone-converter": lazy(() =>
+    import("./pages/timezone-converter-page/timezone-converter-page").then((m) => ({
+      default: m.TimezoneConverterPage,
+    }))
+  ),
 };
 
 const NotFoundPage = () => (

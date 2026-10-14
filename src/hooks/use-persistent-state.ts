@@ -3,18 +3,22 @@ import type { Dispatch, SetStateAction } from "react";
 
 const PREFIX = "devora:";
 
-const load = <T,>(key: string, initial: T): T => {
+type StorageKind = "session" | "local";
+
+const storageFor = (kind: StorageKind): Storage => (kind === "local" ? localStorage : sessionStorage);
+
+const load = <T,>(key: string, initial: T, kind: StorageKind): T => {
   try {
-    const raw = sessionStorage.getItem(PREFIX + key);
+    const raw = storageFor(kind).getItem(PREFIX + key);
     return raw === null ? initial : (JSON.parse(raw) as T);
   } catch {
     return initial;
   }
 };
 
-const save = (key: string, value: unknown): boolean => {
+const save = (key: string, value: unknown, kind: StorageKind): boolean => {
   try {
-    sessionStorage.setItem(PREFIX + key, JSON.stringify(value));
+    storageFor(kind).setItem(PREFIX + key, JSON.stringify(value));
     return true;
   } catch {
     return false;
@@ -23,23 +27,24 @@ const save = (key: string, value: unknown): boolean => {
 
 export const usePersistentState = <T,>(
   key: string,
-  initial: T
+  initial: T,
+  kind: StorageKind = "session"
 ): [T, Dispatch<SetStateAction<T>>] => {
-  const [value, setValue] = useState<T>(() => load(key, initial));
+  const [value, setValue] = useState<T>(() => load(key, initial, kind));
   const latest = useRef(value);
 
   useEffect(() => {
     latest.current = value;
-    const timer = setTimeout(() => save(key, value), 250);
+    const timer = setTimeout(() => save(key, value, kind), 250);
     return () => clearTimeout(timer);
-  }, [key, value]);
+  }, [key, value, kind]);
 
   useEffect(() => {
     const ref = latest;
     return () => {
-      save(key, ref.current);
+      save(key, ref.current, kind);
     };
-  }, [key]);
+  }, [key, kind]);
 
   return [value, setValue];
 };

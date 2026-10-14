@@ -68,3 +68,24 @@ export const formatRelative = (date: Date, now: number = Date.now()): string => 
   const label = `${count} ${unit}${count === 1 ? "" : "s"}`;
   return diff < 0 ? `in ${label}` : `${label} ago`;
 };
+
+export interface IWallTime {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+}
+
+export const parseWallTime = (text: string): IWallTime | null => {
+  const match = text
+    .trim()
+    .match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (!match) return null;
+  const [year, month, day, hour, minute, second] = match.slice(1).map((part) => Number(part ?? 0));
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
+  if (hour > 23 || minute > 59 || second > 59) return null;
+  return { year, month, day, hour, minute, second };
+};

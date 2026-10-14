@@ -131,7 +131,7 @@ export const DateTimeField = ({ label, value, onChange, error, hint }: IDateTime
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <div className="flex min-h-8 flex-wrap items-baseline gap-x-3 gap-y-1">
+      <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
         <label htmlFor={id} className="text-sm font-medium text-ink">
           {label}
         </label>
